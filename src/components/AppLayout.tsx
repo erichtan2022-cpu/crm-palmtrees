@@ -30,15 +30,26 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
 };
 
 const Shell: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   const [view, setView] = useState<ViewKey>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#faf7f2' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-4 border-green-800 border-t-transparent animate-spin" />
+          <div className="text-stone-600 text-sm">Loading Palmtrees CRM…</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) return <Login />;
 
   const renderView = () => {
     switch (view) {
-      case 'dashboard': return <Dashboard onNav={(v)=>setView(v as ViewKey)} />;
+      case 'dashboard': return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
       case 'students': return <Students />;
       case 'parents': return <Parents />;
       case 'leads': return <Leads />;
@@ -49,7 +60,7 @@ const Shell: React.FC = () => {
       case 'volunteers': return <Volunteers />;
       case 'analytics': return <Analytics />;
       case 'settings': return <Settings />;
-      default: return <Dashboard onNav={(v)=>setView(v as ViewKey)} />;
+      default: return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
     }
   };
 
@@ -57,9 +68,14 @@ const Shell: React.FC = () => {
 
   return (
     <div className="min-h-screen flex" style={{ background: '#faf7f2' }}>
-      <Sidebar current={view} onChange={setView} open={sidebarOpen} onClose={()=>setSidebarOpen(false)} />
+      <Sidebar current={view} onChange={setView} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
-        <Header title={meta.title} subtitle={meta.subtitle} onMenuClick={()=>setSidebarOpen(true)} />
+        <Header
+          title={meta.title}
+          subtitle={meta.subtitle}
+          onMenuClick={() => setSidebarOpen(true)}
+          user={currentUser}
+        />
         <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto">
           {renderView()}
         </main>

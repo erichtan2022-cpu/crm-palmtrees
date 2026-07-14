@@ -120,7 +120,7 @@ export function useLeads() {
   useEffect(() => { refresh(); }, [refresh]);
 
   const addLead = async (lead: Omit<Lead, 'id'>) => {
-    const id = 'l' + Date.now();
+    const id = crypto.randomUUID();
     const { error } = await supabase.from('leads').insert({
       id, parent_name: lead.parentName, child_name: lead.childName, child_age: lead.childAge,
       email: lead.email, phone: lead.phone, source: lead.source, status: lead.status,
@@ -187,7 +187,7 @@ export function useWaitlist() {
   };
 
   const addToWaitlist = async (w: Omit<Waitlist, 'id'>) => {
-    const id = 'w' + Date.now();
+    const id = crypto.randomUUID();
     const { error } = await supabase.from('waitlist').insert({
       id, child_name: w.childName, parent_name: w.parentName, age: w.age,
       desired_class: w.desiredClass, join_date: w.joinDate, priority: w.priority,
@@ -222,14 +222,14 @@ export async function deleteStudent(id: string) {
 }
 
 export async function addEvent(e: Omit<Event, 'id'>) {
-  const id = 'e' + Date.now();
+  const id = crypto.randomUUID();
   return supabase.from('events').insert({
     id, title: e.title, date: e.date, time: e.time, type: e.type, classroom: e.classroom, description: e.description,
   });
 }
 
 export async function logMessage(m: Omit<Message, 'id'>) {
-  const id = 'm' + Date.now();
+  const id = crypto.randomUUID();
   return supabase.from('messages').insert({
     id, to_recipient: m.to, subject: m.subject, channel: m.channel, date: m.date, status: m.status, preview: m.preview,
   });
@@ -237,7 +237,7 @@ export async function logMessage(m: Omit<Message, 'id'>) {
 
 // ---------- Student / Parent creation (real signup) ----------
 export async function addStudent(s: Omit<Student, 'id'>) {
-  const id = 's' + Date.now();
+  const id = crypto.randomUUID();
   const { error } = await supabase.from('students').insert({
     id, name: s.name, photo: s.photo, age: s.age, dob: s.dob,
     enrollment_date: s.enrollmentDate, classroom: s.classroom,
@@ -251,7 +251,7 @@ export async function addStudent(s: Omit<Student, 'id'>) {
 }
 
 export async function addParent(p: Omit<Parent, 'id'>) {
-  const id = 'p' + Date.now();
+  const id = crypto.randomUUID();
   const { error } = await supabase.from('parents').insert({
     id, name: p.name, email: p.email, phone: p.phone, relation: p.relation,
     child_ids: p.childIds, preferred_channel: p.preferredChannel,
@@ -271,8 +271,8 @@ export async function updateWaitlist(id: string, w: Partial<Waitlist>) {
 // Promote an enrolled lead into the Student + Family (Parent) databases.
 // Returns { studentId, parentId } so callers can confirm/link.
 export async function enrollLead(lead: Lead) {
-  const parentId = 'p' + Date.now();
-  const studentId = 's' + (Date.now() + 1);
+  const parentId = crypto.randomUUID();
+  const studentId = crypto.randomUUID();
   const classroom = lead.childAge <= 3 ? 'Toddler' : lead.childAge <= 6 ? 'Primary' : lead.childAge <= 9 ? 'Lower Elementary' : 'Upper Elementary';
 
   const { error: pErr } = await supabase.from('parents').insert({
