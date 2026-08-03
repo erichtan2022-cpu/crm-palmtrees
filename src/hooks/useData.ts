@@ -378,3 +378,16 @@ export async function enrollLead(lead: Lead) {
 
   return { studentId, parentId };
 }
+
+// ---------- Profile avatar update (self-service, any role) ----------
+export async function updateProfileAvatar(userId: string, file: File): Promise<string | null> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `profiles/${userId}.${ext}`;
+  const { error: upErr } = await supabase.storage.from('photos').upload(path, file, { cacheControl: '3600', upsert: true });
+  if (upErr) { console.error('Avatar upload failed:', upErr); return null; }
+  const { data } = supabase.storage.from('photos').getPublicUrl(path);
+  const publicUrl = data.publicUrl;
+  const { error: dbErr } = await supabase.from('profiles').update({ avatar: publicUrl }).eq('id', userId);
+  if (dbErr) { console.error('Avatar DB update failed:', dbErr); return null; }
+  return publicUrl;
+}

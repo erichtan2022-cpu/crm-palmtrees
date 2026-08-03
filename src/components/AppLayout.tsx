@@ -15,6 +15,7 @@ import Volunteers from '@/components/views/Volunteers';
 import Analytics from '@/components/views/Analytics';
 import Settings from '@/components/views/Settings';
 import UserAccounts from '@/components/views/UserAccounts';
+import MyProfile from '@/components/views/MyProfile';
 
 const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Your overview at a glance' },
@@ -29,6 +30,7 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   analytics: { title: 'Website Analytics', subtitle: 'Traffic, forms & campaign performance' },
   settings: { title: 'Settings', subtitle: 'System, integrations & data protection' },
   users: { title: 'User Accounts', subtitle: 'Create & manage login accounts' },
+  profile: { title: 'My Profile', subtitle: 'Your account & profile photo' },
 };
 
 const Shell: React.FC = () => {
@@ -63,6 +65,7 @@ const Shell: React.FC = () => {
       case 'analytics': return <Analytics />;
       case 'settings': return <Settings />;
       case 'users': return <UserAccounts />;
+      case 'profile': return <MyProfile />;
       default: return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
     }
   };
@@ -78,6 +81,7 @@ const Shell: React.FC = () => {
           subtitle={meta.subtitle}
           onMenuClick={() => setSidebarOpen(true)}
           user={currentUser}
+          onAvatarClick={() => setView('profile')}
         />
         <main className="flex-1 p-4 lg:p-8 max-w-[1400px] w-full mx-auto">
           {renderView()}

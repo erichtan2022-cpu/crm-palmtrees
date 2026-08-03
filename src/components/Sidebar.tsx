@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, ChartBar as BarChart3, LogOut, X, Settings, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, ChartBar as BarChart3, LogOut, X, Settings, ShieldCheck, CircleUser as UserCircle } from 'lucide-react';
 import { LOGO_URL } from '@/data/mockData';
 
 
-export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings' | 'users';
+export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings' | 'users' | 'profile';
 
 interface Props {
   current: ViewKey;
@@ -29,6 +29,7 @@ const Sidebar: React.FC<Props> = ({ current, onChange, open, onClose }) => {
     { key: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
     { key: 'users', label: 'User Accounts', icon: ShieldCheck, roles: ['admin'] },
     { key: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
+    { key: 'profile', label: 'My Profile', icon: UserCircle, roles: ['admin', 'teacher', 'staff', 'parent'] },
   ];
 
   const items = allItems.filter((i) => currentUser && i.roles.includes(currentUser.role));

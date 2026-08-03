@@ -7,9 +7,10 @@ interface Props {
   subtitle?: string;
   onMenuClick: () => void;
   user: AppUser;
+  onAvatarClick: () => void;
 }
 
-const Header: React.FC<Props> = ({ title, subtitle, onMenuClick, user }) => {
+const Header: React.FC<Props> = ({ title, subtitle, onMenuClick, user, onAvatarClick }) => {
   const { logout } = useAuth();
 
   return (
@@ -33,7 +34,9 @@ const Header: React.FC<Props> = ({ title, subtitle, onMenuClick, user }) => {
             <img
               src={user.avatar || `https://i.pravatar.cc/150?u=${encodeURIComponent(user.email)}`}
               alt={user.name}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-stone-200"
+              onClick={onAvatarClick}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-stone-200 cursor-pointer hover:ring-green-600 transition"
+              title="Change profile photo"
             />
             <div className="hidden sm:block leading-tight">
               <div className="text-sm font-semibold text-stone-800 max-w-[120px] truncate">{user.name}</div>
