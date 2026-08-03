@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Student } from '@/data/mockData';
-import { useStudents, addStudentObservation, recordAttendance, deleteStudent, addStudent } from '@/hooks/useData';
+import { useStudents, addStudentObservation, recordAttendance, deleteStudent, addStudent, updateStudent, uploadPhoto } from '@/hooks/useData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, Download, Plus, X, AlertCircle, Phone, Calendar, CheckCircle2, Clock, XCircle, Trash2 } from 'lucide-react';
+import { Search, Download, Plus, X, CircleAlert as AlertCircle, Phone, Calendar, CircleCheck as CheckCircle2, Clock, Circle as XCircle, Trash2, Pencil, Camera } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const Students: React.FC = () => {
@@ -12,7 +12,7 @@ const Students: React.FC = () => {
   const [classFilter, setClassFilter] = useState<string>('all');
   const [selected, setSelected] = useState<Student | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   let list = allStudents;
   if (currentUser?.role === 'parent') {
@@ -54,7 +54,6 @@ const Students: React.FC = () => {
             <Plus className="w-4 h-4"/>Add Student
           </button>
         )}
-
       </div>
 
       <div className="text-sm text-stone-600">Showing <span className="font-semibold text-stone-800">{filtered.length}</span> of {list.length} students</div>
@@ -63,16 +62,21 @@ const Students: React.FC = () => {
         {filtered.map(s => {
           const today = s.attendance[0];
           return (
-            <button key={s.id} onClick={()=>setSelected(s)} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-md transition text-left">
-              <div className="relative h-32" style={{ background: 'linear-gradient(135deg, #f5e6d3 0%, #d4b896 100%)' }}>
+            <div key={s.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-md transition text-left">
+              <div className="relative h-32 cursor-pointer" style={{ background: 'linear-gradient(135deg, #f5e6d3 0%, #d4b896 100%)' }} onClick={()=>setSelected(s)}>
                 <img src={s.photo} alt={s.name} className="absolute -bottom-6 left-4 w-16 h-16 rounded-2xl object-cover ring-4 ring-white shadow-md" />
                 {s.allergies.length > 0 && (
                   <div className="absolute top-3 right-3 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full flex items-center gap-1 font-medium">
                     <AlertCircle className="w-3 h-3"/>Allergy
                   </div>
                 )}
+                {currentUser?.role !== 'parent' && (
+                  <button onClick={(e)=>{ e.stopPropagation(); setEditingStudent(s); }} className="absolute top-3 left-3 bg-white/80 hover:bg-white p-1.5 rounded-lg shadow-sm" title="Edit student">
+                    <Pencil className="w-3.5 h-3.5 text-stone-700" />
+                  </button>
+                )}
               </div>
-              <div className="p-4 pt-8">
+              <div className="p-4 pt-8 cursor-pointer" onClick={()=>setSelected(s)}>
                 <div className="font-bold text-stone-800">{s.name}</div>
                 <div className="text-xs text-stone-500 mt-0.5">{s.classroom} · Age {s.age}</div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-stone-100">
@@ -83,52 +87,72 @@ const Students: React.FC = () => {
                   </span>
                 </div>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
 
-      {selected && <StudentDetail student={selected} onClose={()=>setSelected(null)} onChanged={refresh} canEdit={currentUser?.role !== 'parent'} />}
-      {showAdd && <AddStudentModal onClose={()=>setShowAdd(false)} onSaved={refresh} />}
+      {selected && <StudentDetail student={selected} onClose={()=>setSelected(null)} onChanged={refresh} canEdit={currentUser?.role !== 'parent'} onEdit={(s)=>{ setSelected(null); setEditingStudent(s); }} />}
+      {showAdd && <StudentFormModal onClose={()=>setShowAdd(false)} onSaved={refresh} />}
+      {editingStudent && <StudentFormModal student={editingStudent} onClose={()=>setEditingStudent(null)} onSaved={refresh} />}
     </div>
   );
 };
 
-const AddStudentModal: React.FC<{ onClose: () => void; onSaved: () => void }> = ({ onClose, onSaved }) => {
+const StudentFormModal: React.FC<{ student?: Student; onClose: () => void; onSaved: () => void }> = ({ student, onClose, onSaved }) => {
+  const editing = !!student;
   const [saving, setSaving] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(student?.photo || '');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
-    name: '', age: '', dob: '', classroom: 'Toddler' as Student['classroom'],
-    enrollmentDate: new Date().toISOString().split('T')[0], medicalInfo: 'None on file',
-    allergies: '', emergencyContact: '', emergencyPhone: '',
+    name: student?.name || '', age: student ? String(student.age) : '', dob: student?.dob || '',
+    classroom: student?.classroom || 'Toddler' as Student['classroom'],
+    enrollmentDate: student?.enrollmentDate || new Date().toISOString().split('T')[0],
+    medicalInfo: student?.medicalInfo || 'None on file',
+    allergies: student?.allergies.join(', ') || '',
+    emergencyContact: student?.emergencyContact || '', emergencyPhone: student?.emergencyPhone || '',
   });
+
+  const pickPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoUrl(URL.createObjectURL(file));
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    const id = await addStudent({
-      name: form.name,
-      photo: `https://i.pravatar.cc/200?u=${encodeURIComponent(form.name)}`,
-      age: parseInt(form.age) || 3,
-      dob: form.dob,
-      enrollmentDate: form.enrollmentDate,
-      classroom: form.classroom,
-      medicalInfo: form.medicalInfo,
-      allergies: form.allergies.split(',').map(a=>a.trim()).filter(Boolean),
-      emergencyContact: form.emergencyContact,
-      emergencyPhone: form.emergencyPhone,
-      parentIds: [],
-      status: 'active',
-      attendance: [],
-      milestones: [],
-      observations: [],
-    });
-    setSaving(false);
-    if (id) {
-      toast.success(`${form.name} enrolled & saved to database!`);
-      onSaved();
-      onClose();
+    let finalPhoto = photoUrl;
+    if (photoFile) {
+      const uploaded = await uploadPhoto(photoFile, 'students');
+      if (uploaded) finalPhoto = uploaded;
+    }
+    if (!finalPhoto) finalPhoto = `https://i.pravatar.cc/200?u=${encodeURIComponent(form.name)}`;
+
+    if (editing && student) {
+      const ok = await updateStudent(student.id, {
+        name: form.name, photo: finalPhoto, age: parseInt(form.age) || 3,
+        dob: form.dob, classroom: form.classroom, medicalInfo: form.medicalInfo,
+        allergies: form.allergies.split(',').map(a=>a.trim()).filter(Boolean),
+        emergencyContact: form.emergencyContact, emergencyPhone: form.emergencyPhone,
+      });
+      setSaving(false);
+      if (ok) { toast.success(`${form.name} updated!`); onSaved(); onClose(); }
+      else toast.error('Could not update student.');
     } else {
-      toast.error('Could not save student. Please try again.');
+      const id = await addStudent({
+        name: form.name, photo: finalPhoto, age: parseInt(form.age) || 3,
+        dob: form.dob, enrollmentDate: form.enrollmentDate, classroom: form.classroom,
+        medicalInfo: form.medicalInfo,
+        allergies: form.allergies.split(',').map(a=>a.trim()).filter(Boolean),
+        emergencyContact: form.emergencyContact, emergencyPhone: form.emergencyPhone,
+        parentIds: [], status: 'active', attendance: [], milestones: [], observations: [],
+      });
+      setSaving(false);
+      if (id) { toast.success(`${form.name} enrolled & saved to database!`); onSaved(); onClose(); }
+      else toast.error('Could not save student.');
     }
   };
 
@@ -138,10 +162,20 @@ const AddStudentModal: React.FC<{ onClose: () => void; onSaved: () => void }> = 
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={onClose}>
       <div className="bg-white rounded-2xl p-6 max-w-lg w-full my-8 max-h-[90vh] overflow-y-auto" onClick={(e)=>e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold" style={{color:'#2D5016'}}>Enroll New Student</h3>
+          <h3 className="text-lg font-bold" style={{color:'#2D5016'}}>{editing ? 'Edit Student' : 'Enroll New Student'}</h3>
           <button onClick={onClose}><X className="w-5 h-5"/></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="relative">
+              <img src={photoUrl || `https://i.pravatar.cc/200?u=placeholder`} alt="Preview" className="w-16 h-16 rounded-2xl object-cover ring-2 ring-stone-100" />
+              <button type="button" onClick={()=>fileRef.current?.click()} className="absolute -bottom-1 -right-1 bg-green-800 text-white p-1.5 rounded-full shadow-md" title="Upload photo">
+                <Camera className="w-3.5 h-3.5" />
+              </button>
+              <input ref={fileRef} type="file" accept="image/*" onChange={pickPhoto} className="hidden" />
+            </div>
+            <div className="text-xs text-stone-500">Click the camera icon to upload a photo from your device.</div>
+          </div>
           <input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} placeholder="Child full name" className={inp}/>
           <div className="grid grid-cols-2 gap-3">
             <input required type="number" value={form.age} onChange={(e)=>setForm({...form,age:e.target.value})} placeholder="Age" className={inp}/>
@@ -166,7 +200,7 @@ const AddStudentModal: React.FC<{ onClose: () => void; onSaved: () => void }> = 
             <input required value={form.emergencyPhone} onChange={(e)=>setForm({...form,emergencyPhone:e.target.value})} placeholder="Emergency phone" className={inp}/>
           </div>
           <button disabled={saving} type="submit" className="w-full py-2.5 rounded-xl text-white font-medium disabled:opacity-60" style={{background:'#4A7C2F'}}>
-            {saving ? 'Saving…' : 'Enroll Student'}
+            {saving ? 'Saving…' : editing ? 'Save Changes' : 'Enroll Student'}
           </button>
         </form>
       </div>
@@ -174,8 +208,7 @@ const AddStudentModal: React.FC<{ onClose: () => void; onSaved: () => void }> = 
   );
 };
 
-
-const StudentDetail: React.FC<{ student: Student; onClose: () => void; onChanged: () => void; canEdit: boolean }> = ({ student, onClose, onChanged, canEdit }) => {
+const StudentDetail: React.FC<{ student: Student; onClose: () => void; onChanged: () => void; canEdit: boolean; onEdit: (s: Student) => void }> = ({ student, onClose, onChanged, canEdit, onEdit }) => {
   const [tab, setTab] = useState<'overview'|'attendance'|'progress'|'observations'>('overview');
   const [obsText, setObsText] = useState('');
   const [obsArea, setObsArea] = useState('Practical Life');
@@ -238,6 +271,7 @@ const StudentDetail: React.FC<{ student: Student; onClose: () => void; onChanged
             </div>
             {canEdit && (
               <div className="flex gap-2 flex-wrap">
+                <button onClick={()=>onEdit(student)} className="px-4 py-2 rounded-xl text-sm font-medium bg-stone-200 text-stone-800 hover:bg-stone-300 flex items-center gap-1.5"><Pencil className="w-4 h-4"/>Edit</button>
                 <button onClick={checkIn} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{background:'#4A7C2F'}}>Check In</button>
                 <button onClick={checkOut} className="px-4 py-2 rounded-xl text-sm font-medium bg-stone-200 text-stone-800">Check Out</button>
                 <button onClick={handleDelete} className="px-3 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-700 hover:bg-red-100 flex items-center gap-1"><Trash2 className="w-4 h-4"/></button>

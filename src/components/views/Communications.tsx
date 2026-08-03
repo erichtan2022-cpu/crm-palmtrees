@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { emailTemplates } from '@/data/mockData';
-import { useMessages, logMessage } from '@/hooks/useData';
-import { Mail, MessageSquare, Smartphone, Send, FileText, Users } from 'lucide-react';
+import { useMessages, logMessage, deleteMessage } from '@/hooks/useData';
+import { Mail, MessageSquare, Smartphone, Send, FileText, Users, Trash2 } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const Communications: React.FC = () => {
@@ -32,6 +32,12 @@ const Communications: React.FC = () => {
     setBody(t.body);
     setTab('compose');
     toast.success('Template loaded');
+  };
+
+  const handleDelete = async (id: string) => {
+    const ok = await deleteMessage(id);
+    if (ok) { toast.success('Message deleted from history'); refresh(); }
+    else toast.error('Could not delete message');
   };
 
   return (
@@ -139,7 +145,10 @@ const Communications: React.FC = () => {
                     <div className="text-xs text-stone-500 mb-1">To: {m.to}</div>
                     <div className="text-sm text-stone-600">{m.preview}</div>
                   </div>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium capitalize">{m.status}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium capitalize">{m.status}</span>
+                    <button onClick={()=>handleDelete(m.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="Delete"><Trash2 className="w-3.5 h-3.5 text-red-600"/></button>
+                  </div>
                 </div>
               ))}
               {messages.length === 0 && <div className="p-8 text-center text-stone-500 text-sm">No messages yet</div>}

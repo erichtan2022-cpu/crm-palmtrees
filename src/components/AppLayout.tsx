@@ -14,6 +14,7 @@ import Waitlist from '@/components/views/Waitlist';
 import Volunteers from '@/components/views/Volunteers';
 import Analytics from '@/components/views/Analytics';
 import Settings from '@/components/views/Settings';
+import UserAccounts from '@/components/views/UserAccounts';
 
 const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Your overview at a glance' },
@@ -27,6 +28,7 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   volunteers: { title: 'Volunteers', subtitle: 'Parent volunteer tracking & engagement' },
   analytics: { title: 'Website Analytics', subtitle: 'Traffic, forms & campaign performance' },
   settings: { title: 'Settings', subtitle: 'System, integrations & data protection' },
+  users: { title: 'User Accounts', subtitle: 'Create & manage login accounts' },
 };
 
 const Shell: React.FC = () => {
@@ -60,6 +62,7 @@ const Shell: React.FC = () => {
       case 'volunteers': return <Volunteers />;
       case 'analytics': return <Analytics />;
       case 'settings': return <Settings />;
+      case 'users': return <UserAccounts />;
       default: return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
     }
   };

@@ -96,6 +96,7 @@ export interface Volunteer {
   skills: string[];
   hours: number;
   upcomingEvent?: string;
+  avatar?: string;
 }
 
 export interface Waitlist {

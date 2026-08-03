@@ -40,7 +40,7 @@ const mapMessage = (r: any): Message => ({
 
 const mapVolunteer = (r: any): Volunteer => ({
   id: r.id, name: r.name, parent: r.parent, skills: r.skills || [],
-  hours: r.hours, upcomingEvent: r.upcoming_event,
+  hours: r.hours, upcomingEvent: r.upcoming_event, avatar: r.avatar || '',
 });
 
 const mapWaitlist = (r: any): Waitlist => ({
@@ -259,6 +259,88 @@ export async function addParent(p: Omit<Parent, 'id'>) {
   });
   if (error) { console.error(error); return null; }
   return id;
+}
+
+export async function updateParent(id: string, p: Partial<Parent>) {
+  const { error } = await supabase.from('parents').update({
+    name: p.name, email: p.email, phone: p.phone, relation: p.relation,
+    child_ids: p.childIds, preferred_channel: p.preferredChannel,
+    privacy_consent: p.privacyConsent, avatar: p.avatar,
+  }).eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function deleteParent(id: string) {
+  const { error } = await supabase.from('parents').delete().eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function updateStudent(id: string, s: Partial<Student>) {
+  const { error } = await supabase.from('students').update({
+    name: s.name, photo: s.photo, age: s.age, dob: s.dob,
+    classroom: s.classroom, medical_info: s.medicalInfo,
+    allergies: s.allergies, emergency_contact: s.emergencyContact,
+    emergency_phone: s.emergencyPhone, status: s.status,
+  }).eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function updateEvent(id: string, e: Partial<Event>) {
+  const { error } = await supabase.from('events').update({
+    title: e.title, date: e.date, time: e.time, type: e.type,
+    classroom: e.classroom, description: e.description,
+  }).eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function deleteEvent(id: string) {
+  const { error } = await supabase.from('events').delete().eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function deleteMessage(id: string) {
+  const { error } = await supabase.from('messages').delete().eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function addVolunteer(v: Omit<Volunteer, 'id'>) {
+  const id = crypto.randomUUID();
+  const { error } = await supabase.from('volunteers').insert({
+    id, name: v.name, parent: v.parent, skills: v.skills,
+    hours: v.hours, upcoming_event: v.upcomingEvent, avatar: v.avatar || '',
+  });
+  if (error) { console.error(error); return null; }
+  return id;
+}
+
+export async function updateVolunteer(id: string, v: Partial<Volunteer>) {
+  const { error } = await supabase.from('volunteers').update({
+    name: v.name, parent: v.parent, skills: v.skills,
+    hours: v.hours, upcoming_event: v.upcomingEvent, avatar: v.avatar,
+  }).eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function deleteVolunteer(id: string) {
+  const { error } = await supabase.from('volunteers').delete().eq('id', id);
+  if (error) { console.error(error); return false; }
+  return true;
+}
+
+export async function uploadPhoto(file: File, folder: string): Promise<string | null> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from('photos').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) { console.error('Upload failed:', error); return null; }
+  const { data } = supabase.storage.from('photos').getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function updateWaitlist(id: string, w: Partial<Waitlist>) {

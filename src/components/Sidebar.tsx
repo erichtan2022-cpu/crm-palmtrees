@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, BarChart3, LogOut, X, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, ChartBar as BarChart3, LogOut, X, Settings, ShieldCheck } from 'lucide-react';
 import { LOGO_URL } from '@/data/mockData';
 
 
-export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings';
+export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings' | 'users';
 
 interface Props {
   current: ViewKey;
@@ -27,6 +27,7 @@ const Sidebar: React.FC<Props> = ({ current, onChange, open, onClose }) => {
     { key: 'waitlist', label: 'Waitlist', icon: Clock, roles: ['admin', 'staff'] },
     { key: 'volunteers', label: 'Volunteers', icon: HandHeart, roles: ['admin', 'staff'] },
     { key: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
+    { key: 'users', label: 'User Accounts', icon: ShieldCheck, roles: ['admin'] },
     { key: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
   ];
 
