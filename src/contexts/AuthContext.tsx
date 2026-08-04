@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { setActivityActor } from '@/hooks/useData';
 
 export interface AppUser {
   id: string;
@@ -49,6 +50,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const profile = await loadProfile(session.user.id);
           if (profile) profile.email = session.user.email ?? '';
           setCurrentUser(profile);
+          setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
         }
         setLoading(false);
       })();
@@ -60,8 +62,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const profile = await loadProfile(session.user.id);
           if (profile) profile.email = session.user.email ?? '';
           setCurrentUser(profile);
+          setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
         } else {
           setCurrentUser(null);
+          setActivityActor(null);
         }
       })();
     });
@@ -77,6 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     await supabase.auth.signOut();
     setCurrentUser(null);
+    setActivityActor(null);
   };
 
   const refreshUser = async () => {
@@ -85,6 +90,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const profile = await loadProfile(session.user.id);
       if (profile) profile.email = session.user.email ?? '';
       setCurrentUser(profile);
+      setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
     }
   };
 

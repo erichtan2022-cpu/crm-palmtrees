@@ -5,6 +5,105 @@ import {
   seedStudents, seedParents, seedLeads, seedEvents, seedMessages, seedWaitlist, seedVolunteers
 } from '@/data/seedData';
 
+// ---------- Activity logging ----------
+export interface ActivityActor {
+  id: string;
+  name: string;
+  role: string;
+}
+
+let currentActor: ActivityActor | null = null;
+
+export function setActivityActor(actor: ActivityActor | null) {
+  currentActor = actor;
+}
+
+export async function logActivity(
+  action: string,
+  entityType: string,
+  description: string,
+  entityId?: string,
+) {
+  if (!currentActor) return;
+  try {
+    await supabase.from('activity_log').insert({
+      user_id: currentActor.id,
+      user_name: currentActor.name,
+      user_role: currentActor.role,
+      action,
+      entity_type: entityType,
+      entity_id: entityId || null,
+      description,
+    });
+  } catch (e) {
+    console.error('Failed to log activity:', e);
+  }
+}
+
+// ---------- CRM version helpers ----------
+export interface CrmVersion {
+  id: string;
+  version: string;
+  release_date: string;
+  notes: string;
+  created_at: string;
+}
+
+export async function fetchLatestVersion(): Promise<CrmVersion | null> {
+  const { data, error } = await supabase
+    .from('crm_versions')
+    .select('*')
+    .order('release_date', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as CrmVersion;
+}
+
+export async function fetchAllVersions(): Promise<CrmVersion[]> {
+  const { data, error } = await supabase
+    .from('crm_versions')
+    .select('*')
+    .order('release_date', { ascending: false });
+  if (error || !data) return [];
+  return data as CrmVersion[];
+}
+
+export async function publishVersion(version: string, notes: string): Promise<boolean> {
+  const { error } = await supabase.from('crm_versions').insert({
+    version,
+    release_date: new Date().toISOString().split('T')[0],
+    notes,
+    published_by: currentActor?.id || null,
+  });
+  if (error) { console.error(error); return false; }
+  await logActivity('publish_version', 'crm_version', `Published new CRM version ${version}`, undefined);
+  return true;
+}
+
+// ---------- Activity log fetching ----------
+export interface ActivityLogEntry {
+  id: string;
+  user_id: string | null;
+  user_name: string | null;
+  user_role: string | null;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  description: string;
+  created_at: string;
+}
+
+export async function fetchActivityLogs(limit = 200): Promise<ActivityLogEntry[]> {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error || !data) return [];
+  return data as ActivityLogEntry[];
+}
+
 // ---------- Mappers (DB row → app type) ----------
 const mapStudent = (r: any): Student => ({
   id: r.id, name: r.name, photo: r.photo, age: r.age, dob: r.dob,
@@ -127,6 +226,7 @@ export function useLeads() {
       inquiry_date: lead.inquiryDate, tour_date: lead.tourDate, notes: lead.notes,
     });
     if (error) { console.error(error); return null; }
+    await logActivity('create', 'lead', `Added lead: ${lead.parentName} (${lead.childName})`, id);
     await refresh();
     return id;
   };
@@ -134,6 +234,7 @@ export function useLeads() {
   const updateLeadStatus = async (id: string, status: Lead['status']) => {
     const { error } = await supabase.from('leads').update({ status }).eq('id', id);
     if (error) { console.error(error); return; }
+    await logActivity('update', 'lead', `Updated lead status to "${status}"`, id);
     setData(prev => prev.map(l => l.id === id ? { ...l, status } : l));
   };
 
@@ -144,12 +245,14 @@ export function useLeads() {
       tour_date: lead.tourDate, notes: lead.notes, follow_up_date: lead.followUpDate,
     }).eq('id', id);
     if (error) { console.error(error); return; }
+    await logActivity('update', 'lead', `Updated lead: ${lead.parentName || ''}`, id);
     setData(prev => prev.map(l => l.id === id ? { ...l, ...lead } : l));
   };
 
   const deleteLead = async (id: string) => {
     const { error } = await supabase.from('leads').delete().eq('id', id);
     if (error) { console.error(error); return; }
+    await logActivity('delete', 'lead', 'Deleted a lead', id);
     setData(prev => prev.filter(l => l.id !== id));
   };
 
@@ -183,6 +286,7 @@ export function useWaitlist() {
   const removeFromWaitlist = async (id: string) => {
     const { error } = await supabase.from('waitlist').delete().eq('id', id);
     if (error) { console.error(error); return; }
+    await logActivity('delete', 'waitlist', 'Removed entry from waitlist', id);
     setData(prev => prev.filter(w => w.id !== id));
   };
 
@@ -194,6 +298,7 @@ export function useWaitlist() {
       notes: w.notes, position: data.length + 1,
     });
     if (error) { console.error(error); return null; }
+    await logActivity('create', 'waitlist', `Added to waitlist: ${w.childName}`, id);
     await refresh();
     return id;
   };
@@ -205,7 +310,9 @@ export function useWaitlist() {
 export async function addStudentObservation(studentId: string, observation: Student['observations'][0]) {
   const { data: row } = await supabase.from('students').select('observations').eq('id', studentId).single();
   const obs = [...(row?.observations || []), observation];
-  return supabase.from('students').update({ observations: obs }).eq('id', studentId);
+  const res = await supabase.from('students').update({ observations: obs }).eq('id', studentId);
+  if (!res.error) await logActivity('update', 'student', `Added observation for student`, studentId);
+  return res;
 }
 
 export async function recordAttendance(studentId: string, entry: Student['attendance'][0]) {
@@ -214,25 +321,33 @@ export async function recordAttendance(studentId: string, entry: Student['attend
   // Replace today's entry if it exists, else prepend
   const filtered = att.filter((a: any) => a.date !== entry.date);
   const next = [entry, ...filtered].slice(0, 30);
-  return supabase.from('students').update({ attendance: next }).eq('id', studentId);
+  const res = await supabase.from('students').update({ attendance: next }).eq('id', studentId);
+  if (!res.error) await logActivity('update', 'student', `Recorded attendance (${entry.status})`, studentId);
+  return res;
 }
 
 export async function deleteStudent(id: string) {
-  return supabase.from('students').delete().eq('id', id);
+  const res = await supabase.from('students').delete().eq('id', id);
+  if (!res.error) await logActivity('delete', 'student', 'Deleted a student', id);
+  return res;
 }
 
 export async function addEvent(e: Omit<Event, 'id'>) {
   const id = crypto.randomUUID();
-  return supabase.from('events').insert({
+  const res = await supabase.from('events').insert({
     id, title: e.title, date: e.date, time: e.time, type: e.type, classroom: e.classroom, description: e.description,
   });
+  if (!res.error) await logActivity('create', 'event', `Created event: ${e.title}`, id);
+  return res;
 }
 
 export async function logMessage(m: Omit<Message, 'id'>) {
   const id = crypto.randomUUID();
-  return supabase.from('messages').insert({
+  const res = await supabase.from('messages').insert({
     id, to_recipient: m.to, subject: m.subject, channel: m.channel, date: m.date, status: m.status, preview: m.preview,
   });
+  if (!res.error) await logActivity('create', 'message', `Sent ${m.channel}: "${m.subject}"`, id);
+  return res;
 }
 
 // ---------- Student / Parent creation (real signup) ----------
@@ -247,6 +362,7 @@ export async function addStudent(s: Omit<Student, 'id'>) {
     attendance: s.attendance, milestones: s.milestones, observations: s.observations,
   });
   if (error) { console.error(error); return null; }
+  await logActivity('create', 'student', `Added student: ${s.name}`, id);
   return id;
 }
 
@@ -258,6 +374,7 @@ export async function addParent(p: Omit<Parent, 'id'>) {
     privacy_consent: p.privacyConsent, avatar: p.avatar,
   });
   if (error) { console.error(error); return null; }
+  await logActivity('create', 'parent', `Added parent: ${p.name}`, id);
   return id;
 }
 
@@ -268,12 +385,14 @@ export async function updateParent(id: string, p: Partial<Parent>) {
     privacy_consent: p.privacyConsent, avatar: p.avatar,
   }).eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('update', 'parent', `Updated parent: ${p.name || ''}`, id);
   return true;
 }
 
 export async function deleteParent(id: string) {
   const { error } = await supabase.from('parents').delete().eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('delete', 'parent', 'Deleted a parent', id);
   return true;
 }
 
@@ -285,6 +404,7 @@ export async function updateStudent(id: string, s: Partial<Student>) {
     emergency_phone: s.emergencyPhone, status: s.status,
   }).eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('update', 'student', `Updated student: ${s.name || ''}`, id);
   return true;
 }
 
@@ -294,18 +414,21 @@ export async function updateEvent(id: string, e: Partial<Event>) {
     classroom: e.classroom, description: e.description,
   }).eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('update', 'event', `Updated event: ${e.title || ''}`, id);
   return true;
 }
 
 export async function deleteEvent(id: string) {
   const { error } = await supabase.from('events').delete().eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('delete', 'event', 'Deleted an event', id);
   return true;
 }
 
 export async function deleteMessage(id: string) {
   const { error } = await supabase.from('messages').delete().eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('delete', 'message', 'Deleted a message', id);
   return true;
 }
 
@@ -316,6 +439,7 @@ export async function addVolunteer(v: Omit<Volunteer, 'id'>) {
     hours: v.hours, upcoming_event: v.upcomingEvent, avatar: v.avatar || '',
   });
   if (error) { console.error(error); return null; }
+  await logActivity('create', 'volunteer', `Added volunteer: ${v.name}`, id);
   return id;
 }
 
@@ -325,12 +449,14 @@ export async function updateVolunteer(id: string, v: Partial<Volunteer>) {
     hours: v.hours, upcoming_event: v.upcomingEvent, avatar: v.avatar,
   }).eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('update', 'volunteer', `Updated volunteer: ${v.name || ''}`, id);
   return true;
 }
 
 export async function deleteVolunteer(id: string) {
   const { error } = await supabase.from('volunteers').delete().eq('id', id);
   if (error) { console.error(error); return false; }
+  await logActivity('delete', 'volunteer', 'Deleted a volunteer', id);
   return true;
 }
 
@@ -344,10 +470,12 @@ export async function uploadPhoto(file: File, folder: string): Promise<string | 
 }
 
 export async function updateWaitlist(id: string, w: Partial<Waitlist>) {
-  return supabase.from('waitlist').update({
+  const res = await supabase.from('waitlist').update({
     child_name: w.childName, parent_name: w.parentName, age: w.age,
     desired_class: w.desiredClass, priority: w.priority, notes: w.notes,
   }).eq('id', id);
+  if (!res.error) await logActivity('update', 'waitlist', `Updated waitlist entry: ${w.childName || ''}`, id);
+  return res;
 }
 
 // Promote an enrolled lead into the Student + Family (Parent) databases.
@@ -375,6 +503,10 @@ export async function enrollLead(lead: Lead) {
 
   // Mark the lead as enrolled (so it isn't re-imported)
   await supabase.from('leads').update({ status: 'Enrolled', notes: (lead.notes || '') + ' [Imported to Student & Family DB]' }).eq('id', lead.id);
+
+  await logActivity('enroll', 'lead', `Enrolled lead: ${lead.childName} (parent: ${lead.parentName})`, lead.id);
+  await logActivity('create', 'student', `Enrolled new student: ${lead.childName}`, studentId);
+  await logActivity('create', 'parent', `Enrolled new parent: ${lead.parentName}`, parentId);
 
   return { studentId, parentId };
 }

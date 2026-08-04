@@ -16,6 +16,7 @@ import Analytics from '@/components/views/Analytics';
 import Settings from '@/components/views/Settings';
 import UserAccounts from '@/components/views/UserAccounts';
 import MyProfile from '@/components/views/MyProfile';
+import ActivityLog from '@/components/views/ActivityLog';
 
 const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Your overview at a glance' },
@@ -30,6 +31,7 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   analytics: { title: 'Website Analytics', subtitle: 'Traffic, forms & campaign performance' },
   settings: { title: 'Settings', subtitle: 'System, integrations & data protection' },
   users: { title: 'User Accounts', subtitle: 'Create & manage login accounts' },
+  'activity-log': { title: 'Activity Log', subtitle: 'History of all changes made in the CRM' },
   profile: { title: 'My Profile', subtitle: 'Your account & profile photo' },
 };
 
@@ -65,6 +67,7 @@ const Shell: React.FC = () => {
       case 'analytics': return <Analytics />;
       case 'settings': return <Settings />;
       case 'users': return <UserAccounts />;
+      case 'activity-log': return <ActivityLog />;
       case 'profile': return <MyProfile />;
       default: return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
     }
