@@ -502,7 +502,7 @@ export async function enrollLead(lead: Lead) {
   if (sErr) { console.error(sErr); return null; }
 
   // Mark the lead as enrolled (so it isn't re-imported)
-  await supabase.from('leads').update({ status: 'Enrolled', notes: (lead.notes || '') + ' [Imported to Student & Family DB]' }).eq('id', lead.id);
+  await supabase.from('leads').update({ status: 'Enrolled', imported: true }).eq('id', lead.id);
 
   await logActivity('enroll', 'lead', `Enrolled lead: ${lead.childName} (parent: ${lead.parentName})`, lead.id);
   await logActivity('create', 'student', `Enrolled new student: ${lead.childName}`, studentId);

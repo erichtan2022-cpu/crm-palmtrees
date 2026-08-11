@@ -1,10 +1,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, ChartBar as BarChart3, LogOut, X, Settings, ShieldCheck, CircleUser as UserCircle, History } from 'lucide-react';
+import { LayoutDashboard, Users, Heart, UserPlus, MessageSquare, Calendar, TrendingUp, Clock, HandHeart, ChartBar as BarChart3, LogOut, X, Settings, ShieldCheck, CircleUser as UserCircle, History, ClipboardList } from 'lucide-react';
 import { LOGO_URL } from '@/data/mockData';
 
 
-export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings' | 'users' | 'profile' | 'activity-log';
+export type ViewKey = 'dashboard' | 'students' | 'parents' | 'leads' | 'data-enrolled' | 'communications' | 'calendar' | 'progress' | 'waitlist' | 'volunteers' | 'analytics' | 'settings' | 'users' | 'profile' | 'activity-log';
 
 interface Props {
   current: ViewKey;
@@ -21,6 +21,7 @@ const Sidebar: React.FC<Props> = ({ current, onChange, open, onClose }) => {
     { key: 'students', label: 'Students', icon: Users, roles: ['admin', 'teacher', 'staff'] },
     { key: 'parents', label: 'Family Directory', icon: Heart, roles: ['admin', 'staff'] },
     { key: 'leads', label: 'Lead Management', icon: UserPlus, roles: ['admin', 'staff'] },
+    { key: 'data-enrolled', label: 'Data Enrolled', icon: ClipboardList, roles: ['admin', 'staff'] },
     { key: 'communications', label: 'Communications', icon: MessageSquare, roles: ['admin', 'staff', 'teacher'] },
     { key: 'calendar', label: 'Calendar & Events', icon: Calendar, roles: ['admin', 'teacher', 'staff', 'parent'] },
     { key: 'progress', label: 'Progress Tracking', icon: TrendingUp, roles: ['admin', 'teacher', 'parent'] },
