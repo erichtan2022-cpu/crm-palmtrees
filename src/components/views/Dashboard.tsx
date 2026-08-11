@@ -1,8 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { analyticsData } from '@/data/mockData';
 import { useStudents, useParents, useLeads, useEvents, useMessages, useWaitlist } from '@/hooks/useData';
-import { Users, UserPlus, Calendar, MessageSquare, TrendingUp, Heart, Clock, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { Users, UserPlus, Calendar, MessageSquare, TrendingUp, Heart, Clock, ArrowUpRight, CircleCheck as CheckCircle2 } from 'lucide-react';
 
 interface Props { onNav: (v: string) => void }
 
@@ -138,40 +137,51 @@ const Dashboard: React.FC<Props> = ({ onNav }) => {
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-stone-800 flex items-center gap-2"><TrendingUp className="w-5 h-5" style={{color:'#4A7C2F'}}/>Website Visitors (Last 7 Days)</h3>
-            <span className="text-xs text-stone-500">{analyticsData.pageViews} page views</span>
+            <h3 className="font-bold text-stone-800 flex items-center gap-2"><TrendingUp className="w-5 h-5" style={{color:'#4A7C2F'}}/>Enrollment Overview</h3>
+            <span className="text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded-full font-medium">Live</span>
           </div>
-          <div className="flex items-end gap-2 h-40">
-            {analyticsData.visitors.map(d => (
-              <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                <div className="text-xs text-stone-600 font-medium">{d.value}</div>
-                <div className="w-full rounded-t-lg transition-all hover:opacity-80"
-                  style={{ height: `${(d.value/350)*100}%`, background: 'linear-gradient(180deg, #4A7C2F 0%, #2D5016 100%)', minHeight: '8px' }}/>
-                <div className="text-xs text-stone-500">{d.day}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-green-50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-green-800">{leads.filter(l=>l.status==='Enrolled').length}</div>
+              <div className="text-xs text-green-700 mt-1">Enrolled</div>
+            </div>
+            <div className="bg-blue-50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-blue-800">{leads.filter(l=>l.status==='Applied').length}</div>
+              <div className="text-xs text-blue-700 mt-1">Applied</div>
+            </div>
+            <div className="bg-amber-50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-amber-800">{leads.length > 0 ? ((leads.filter(l=>l.status==='Enrolled').length / leads.length) * 100).toFixed(1) : '0.0'}%</div>
+              <div className="text-xs text-amber-700 mt-1">Conversion</div>
+            </div>
+            <div className="bg-stone-100 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-stone-800">{attendanceRate}%</div>
+              <div className="text-xs text-stone-600 mt-1">Attendance Today</div>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-stone-100">
-            <div><div className="text-xs text-stone-500">Form Submissions</div><div className="font-bold text-stone-800">{analyticsData.formSubmissions}</div></div>
-            <div><div className="text-xs text-stone-500">Conversion Rate</div><div className="font-bold text-stone-800">{analyticsData.conversionRate}%</div></div>
-            <div><div className="text-xs text-stone-500">Attendance Today</div><div className="font-bold text-stone-800">{attendanceRate}%</div></div>
+          <div className="mt-4 pt-4 border-t border-stone-100">
+            <div className="text-xs text-stone-500 mb-2">Enrollment Revenue</div>
+            <div className="text-xl font-bold text-stone-800">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(leads.filter(l => l.status === 'Enrolled').reduce((sum, l) => sum + (l.revenue || 0), 0))}</div>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
-          <h3 className="font-bold text-stone-800 mb-4">Traffic Sources</h3>
+          <h3 className="font-bold text-stone-800 mb-4">Lead Sources <span className="text-xs font-normal text-green-700 bg-green-50 px-2 py-0.5 rounded-full ml-1">Live</span></h3>
           <div className="space-y-3">
-            {analyticsData.sources.map(s => (
-              <div key={s.name}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-stone-700">{s.name}</span>
-                  <span className="font-medium text-stone-800">{s.value}%</span>
+            {['Website', 'Instagram', 'Google Ads', 'Referral', 'Walk-in'].map(name => {
+              const count = leads.filter(l => l.source === name).length;
+              const max = Math.max(...['Website', 'Instagram', 'Google Ads', 'Referral', 'Walk-in'].map(s => leads.filter(l => l.source === s).length), 1);
+              return (
+                <div key={name}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-stone-700">{name}</span>
+                    <span className="font-medium text-stone-800">{count}</span>
+                  </div>
+                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${(count / max) * 100}%`, background: '#4A7C2F' }} />
+                  </div>
                 </div>
-                <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${s.value}%`, background: s.color }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
