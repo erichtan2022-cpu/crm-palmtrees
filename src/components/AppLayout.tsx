@@ -8,6 +8,7 @@ import Students from '@/components/views/Students';
 import Parents from '@/components/views/Parents';
 import Leads from '@/components/views/Leads';
 import DataEnrolled from '@/components/views/DataEnrolled';
+import DataEnrolled from '@/components/views/DataEnrolled';
 import Communications from '@/components/views/Communications';
 import CalendarView from '@/components/views/CalendarView';
 import Progress from '@/components/views/Progress';
@@ -23,6 +24,7 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Your overview at a glance' },
   students: { title: 'Students', subtitle: 'Profiles, attendance & milestones' },
   parents: { title: 'Family Directory', subtitle: 'All parent & guardian contacts' },
+  'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads ready for database input' },
   leads: { title: 'Lead Management', subtitle: 'Track prospective families through enrollment' },
   'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads imported into the database' },
   communications: { title: 'Communication Hub', subtitle: 'Emails, SMS, WhatsApp & newsletters' },
@@ -59,6 +61,7 @@ const Shell: React.FC = () => {
     switch (view) {
       case 'dashboard': return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
       case 'students': return <Students />;
+      case 'data-enrolled': return <DataEnrolled />;
       case 'parents': return <Parents />;
       case 'leads': return <Leads />;
       case 'data-enrolled': return <DataEnrolled />;

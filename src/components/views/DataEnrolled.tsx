@@ -137,7 +137,7 @@ const DataEnrolled: React.FC = () => {
                           title="Input to Student & Family Database"
                         >
                           <Database className="w-3.5 h-3.5" />
-                          {l.inDatabase ? 'In DB' : inputtingId === l.id ? 'Inputting…' : 'Input to DB'}
+                          {l.inDatabase ? 'In DB' : inputtingId === l.id ? 'Inputting…' : 'Input to Database'}
                         </button>
                         <button onClick={() => openEdit(l)} className="p-1.5 rounded-lg hover:bg-stone-100" title="Edit"><Pencil className="w-4 h-4 text-stone-500" /></button>
                         <button onClick={() => handleDelete(l.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="Delete"><Trash2 className="w-4 h-4 text-red-600" /></button>
