@@ -1,7 +1,6 @@
 import React from 'react';
-import { analyticsData } from '@/data/mockData';
 import { useLeads, useStudents, useParents, useWaitlist } from '@/hooks/useData';
-import { TrendingUp, Globe, FolderInput as FormInput, Target, Users, Heart, UserPlus, Clock } from 'lucide-react';
+import { TrendingUp, FolderInput as FormInput, Target, Users, Heart, UserPlus, Clock, Wallet } from 'lucide-react';
 
 const Analytics: React.FC = () => {
   const { data: leads } = useLeads();
@@ -53,17 +52,17 @@ const Analytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Website analytics (static) + Lead pipeline */}
+      {/* Enrolled stats + Lead pipeline */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
-          <div className="p-2 rounded-xl bg-green-50 w-fit"><Globe className="w-4 h-4 text-green-800" /></div>
-          <div className="text-2xl font-bold text-stone-800 mt-3">{analyticsData.pageViews}</div>
-          <div className="text-xs text-stone-500">Page Views (7d)</div>
+          <div className="p-2 rounded-xl bg-green-50 w-fit"><UserPlus className="w-4 h-4 text-green-800" /></div>
+          <div className="text-2xl font-bold text-stone-800 mt-3">{enrolledLeads}</div>
+          <div className="text-xs text-stone-500">Enrolled</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
           <div className="p-2 rounded-xl bg-amber-50 w-fit"><FormInput className="w-4 h-4 text-amber-700" /></div>
-          <div className="text-2xl font-bold text-stone-800 mt-3">{analyticsData.formSubmissions}</div>
-          <div className="text-xs text-stone-500">Form Submissions</div>
+          <div className="text-2xl font-bold text-stone-800 mt-3">{leads.filter(l => l.status === 'Applied').length}</div>
+          <div className="text-xs text-stone-500">Applied</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
           <div className="p-2 rounded-xl bg-blue-50 w-fit"><Target className="w-4 h-4 text-blue-700" /></div>
@@ -71,24 +70,32 @@ const Analytics: React.FC = () => {
           <div className="text-xs text-stone-500">Lead Conversion</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
-          <div className="p-2 rounded-xl bg-stone-100 w-fit"><TrendingUp className="w-4 h-4 text-stone-700" /></div>
-          <div className="text-2xl font-bold text-stone-800 mt-3">+18%</div>
-          <div className="text-xs text-stone-500">Growth (MoM)</div>
+          <div className="p-2 rounded-xl bg-stone-100 w-fit"><Wallet className="w-4 h-4 text-stone-700" /></div>
+          <div className="text-2xl font-bold text-stone-800 mt-3">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(leads.filter(l => l.status === 'Enrolled').reduce((sum, l) => sum + (l.revenue || 0), 0))}</div>
+          <div className="text-xs text-stone-500">Enrollment Revenue</div>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-4">
-        {/* Visitors bar chart */}
+        {/* Enrolled by lead source — live */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
-          <h3 className="font-bold text-stone-800 mb-4">Daily Website Visitors</h3>
-          <div className="flex items-end gap-2 h-48">
-            {analyticsData.visitors.map(d => (
-              <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                <div className="text-xs text-stone-600 font-medium">{d.value}</div>
-                <div className="w-full rounded-t-lg" style={{ height: `${(d.value / 350) * 100}%`, background: 'linear-gradient(180deg, #4A7C2F, #2D5016)', minHeight: '8px' }} />
-                <div className="text-xs text-stone-500">{d.day}</div>
-              </div>
-            ))}
+          <h3 className="font-bold text-stone-800 mb-4">Enrolled by Lead Source <span className="text-xs font-normal text-green-700 bg-green-50 px-2 py-0.5 rounded-full ml-1">Live</span></h3>
+          <div className="space-y-3">
+            {sourceStats.map(s => {
+              const enrolledCount = leads.filter(l => l.source === s.name && l.status === 'Enrolled').length;
+              const max = Math.max(...sourceStats.map(x => leads.filter(l => l.source === x.name && l.status === 'Enrolled').length), 1);
+              return (
+                <div key={s.name}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-stone-700">{s.name}</span>
+                    <span className="font-medium text-stone-800">{enrolledCount}</span>
+                  </div>
+                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${(enrolledCount / max) * 100}%`, background: '#4A7C2F' }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
