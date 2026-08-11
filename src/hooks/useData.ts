@@ -128,6 +128,7 @@ const mapLead = (r: any): Lead => ({
 });
 
 const mapEvent = (r: any): Event => ({
+  inDatabase: Boolean(r.in_database),
   id: r.id, title: r.title, date: r.date, time: r.time, type: r.type,
   classroom: r.classroom, description: r.description || '',
 });
@@ -481,6 +482,14 @@ export async function updateWaitlist(id: string, w: Partial<Waitlist>) {
 // Promote an enrolled lead into the Student + Family (Parent) databases.
 // Returns { studentId, parentId } so callers can confirm/link.
 export async function enrollLead(lead: Lead) {
+// Move an enrolled lead to the Data Enrolled list (without creating Student/Family records)
+export async function moveToDataEnrolled(leadId: string) {
+  const res = await supabase.from('leads').update({ status: 'Enrolled', imported: true }).eq('id', leadId);
+  if (res.error) { console.error(res.error); return false; }
+  await logActivity('update', 'lead', `Moved lead to Data Enrolled: ${leadId}`, leadId);
+  return true;
+}
+
   const parentId = crypto.randomUUID();
   const studentId = crypto.randomUUID();
   const classroom = lead.childAge <= 3 ? 'Toddler' : lead.childAge <= 6 ? 'Primary' : lead.childAge <= 9 ? 'Lower Elementary' : 'Upper Elementary';
@@ -502,7 +511,7 @@ export async function enrollLead(lead: Lead) {
   if (sErr) { console.error(sErr); return null; }
 
   // Mark the lead as enrolled (so it isn't re-imported)
-  await supabase.from('leads').update({ status: 'Enrolled', imported: true }).eq('id', lead.id);
+  await supabase.from('leads').update({ status: 'Enrolled', imported: true, in_database: true }).eq('id', lead.id);
 
   await logActivity('enroll', 'lead', `Enrolled lead: ${lead.childName} (parent: ${lead.parentName})`, lead.id);
   await logActivity('create', 'student', `Enrolled new student: ${lead.childName}`, studentId);

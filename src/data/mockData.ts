@@ -70,6 +70,7 @@ export interface Lead {
 }
 
 export interface Event {
+  inDatabase: boolean;
   id: string;
   title: string;
   date: string;

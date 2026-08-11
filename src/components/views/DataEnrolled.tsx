@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lead } from '@/data/mockData';
-import { useLeads } from '@/hooks/useData';
-import { Pencil, X, Trash2, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { useLeads, enrollLead } from '@/hooks/useData';
+import { Pencil, X, Trash2, CircleCheck as CheckCircle2, Database } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 
 const SOURCES: Lead['source'][] = ['Website', 'Referral', 'Instagram', 'Google Ads', 'Walk-in'];
@@ -13,9 +13,10 @@ const emptyForm = {
 };
 
 const DataEnrolled: React.FC = () => {
-  const { data: leads, loading, updateLead, deleteLead } = useLeads();
+  const { data: leads, loading, updateLead, deleteLead, refresh } = useLeads();
   const [editing, setEditing] = useState<Lead | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [inputtingId, setInputtingId] = useState<string | null>(null);
 
   const importedLeads = leads.filter((l) => l.status === 'Enrolled' && l.imported);
 
@@ -48,6 +49,20 @@ const DataEnrolled: React.FC = () => {
     toast.success('Record deleted');
   };
 
+  const handleInputToDB = async (lead: Lead) => {
+    if (lead.inDatabase) { toast.error('This data is already in the database.'); return; }
+    if (!confirm(`Input ${lead.childName} & ${lead.parentName} into the Student and Family databases?`)) return;
+    setInputtingId(lead.id);
+    const res = await enrollLead(lead);
+    setInputtingId(null);
+    if (res) {
+      toast.success(`${lead.childName} added to Students & ${lead.parentName} added to Family Directory!`);
+      await refresh();
+    } else {
+      toast.error('Input failed. Please try again.');
+    }
+  };
+
   const fmtIDR = (n: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
 
@@ -60,14 +75,14 @@ const DataEnrolled: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-4 flex items-center justify-between">
         <div>
           <div className="text-sm font-bold text-stone-900">Data Enrolled</div>
-          <div className="text-xs text-stone-500">Leads that have been imported into the database</div>
+          <div className="text-xs text-stone-500">Leads moved here from Lead Management. Click "Input to Database" to add them to Students & Family Directory.</div>
         </div>
         <div className="text-xs text-stone-500">{importedLeads.length} records</div>
       </div>
 
       {importedLeads.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center text-stone-500 text-sm">
-          No enrolled data yet. Import a lead from <span className="font-semibold">Lead Management</span> to see it here.
+          No enrolled data yet. Move a lead from <span className="font-semibold">Lead Management</span> to see it here.
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
@@ -82,7 +97,7 @@ const DataEnrolled: React.FC = () => {
                   <th className="text-left px-4 py-3 font-semibold">Source</th>
                   <th className="text-right px-4 py-3 font-semibold">Tuition Fee</th>
                   <th className="text-left px-4 py-3 font-semibold">Payment</th>
-                  <th className="text-center px-4 py-3 font-semibold">Status</th>
+                  <th className="text-center px-4 py-3 font-semibold">DB Status</th>
                   <th className="text-right px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -102,12 +117,28 @@ const DataEnrolled: React.FC = () => {
                     <td className="px-4 py-3 text-right font-medium text-stone-800">{fmtIDR(l.tuitionFee)}</td>
                     <td className="px-4 py-3 text-stone-600">{l.paymentMethod}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> In DB
-                      </span>
+                      {l.inDatabase ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> In DB
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-600 font-medium">
+                          Not in DB
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleInputToDB(l)}
+                          disabled={l.inDatabase || inputtingId === l.id}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
+                          style={{ background: l.inDatabase ? '#9ca3af' : '#2D5016' }}
+                          title="Input to Student & Family Database"
+                        >
+                          <Database className="w-3.5 h-3.5" />
+                          {l.inDatabase ? 'In DB' : inputtingId === l.id ? 'Inputting…' : 'Input to DB'}
+                        </button>
                         <button onClick={() => openEdit(l)} className="p-1.5 rounded-lg hover:bg-stone-100" title="Edit"><Pencil className="w-4 h-4 text-stone-500" /></button>
                         <button onClick={() => handleDelete(l.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="Delete"><Trash2 className="w-4 h-4 text-red-600" /></button>
                       </div>
