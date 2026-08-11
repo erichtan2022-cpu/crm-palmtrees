@@ -479,9 +479,6 @@ export async function updateWaitlist(id: string, w: Partial<Waitlist>) {
   return res;
 }
 
-// Promote an enrolled lead into the Student + Family (Parent) databases.
-// Returns { studentId, parentId } so callers can confirm/link.
-export async function enrollLead(lead: Lead) {
 // Move an enrolled lead to the Data Enrolled list (without creating Student/Family records)
 export async function moveToDataEnrolled(leadId: string) {
   const res = await supabase.from('leads').update({ status: 'Enrolled', imported: true }).eq('id', leadId);
@@ -490,6 +487,9 @@ export async function moveToDataEnrolled(leadId: string) {
   return true;
 }
 
+// Promote an enrolled lead into the Student + Family (Parent) databases.
+// Returns { studentId, parentId } so callers can confirm/link.
+export async function enrollLead(lead: Lead) {
   const parentId = crypto.randomUUID();
   const studentId = crypto.randomUUID();
   const classroom = lead.childAge <= 3 ? 'Toddler' : lead.childAge <= 6 ? 'Primary' : lead.childAge <= 9 ? 'Lower Elementary' : 'Upper Elementary';
