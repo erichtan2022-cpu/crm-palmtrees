@@ -13,7 +13,7 @@ const COLORS: Record<Lead['status'], string> = {
   'Enrolled': '#4A7C2F',
 };
 
-const emptyForm = { parentName: '', childName: '', childAge: '', email: '', phone: '', source: 'Website' as Lead['source'], status: 'Inquiry' as Lead['status'], notes: '' };
+const emptyForm = { parentName: '', childName: '', childAge: '', email: '', phone: '', source: 'Website' as Lead['source'], status: 'Inquiry' as Lead['status'], notes: '', tuitionFee: '', paymentMethod: 'Full' as Lead['paymentMethod'] };
 
 const Leads: React.FC = () => {
   const { data: leads, loading, addLead, updateLeadStatus, updateLead, deleteLead, refresh } = useLeads();
@@ -25,7 +25,7 @@ const Leads: React.FC = () => {
   const openAdd = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
   const openEdit = (l: Lead) => {
     setEditing(l);
-    setForm({ parentName: l.parentName, childName: l.childName, childAge: String(l.childAge), email: l.email, phone: l.phone, source: l.source, status: l.status, notes: l.notes });
+    setForm({ parentName: l.parentName, childName: l.childName, childAge: String(l.childAge), email: l.email, phone: l.phone, source: l.source, status: l.status, notes: l.notes, tuitionFee: String(l.tuitionFee || ''), paymentMethod: l.paymentMethod || 'Full' });
     setShowForm(true);
   };
 
@@ -56,6 +56,8 @@ const Leads: React.FC = () => {
       source: form.source,
       status: form.status,
       notes: form.notes,
+      tuitionFee: Number(form.tuitionFee) || 0,
+      paymentMethod: form.paymentMethod,
     };
 
     if (editing) {
@@ -201,6 +203,14 @@ const Leads: React.FC = () => {
                 </select>
               </div>
               <textarea value={form.notes} onChange={(e)=>setForm({...form,notes:e.target.value})} placeholder="Notes" rows={2} className={inp}/>
+              <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-3 space-y-2">
+                <div className="text-sm font-bold text-amber-950">Biaya Uang Sekolah</div>
+                <input min="0" type="number" value={form.tuitionFee} onChange={(e)=>setForm({...form,tuitionFee:e.target.value})} placeholder="Biaya dalam Rupiah" className={`${inp} bg-white`}/>
+                <select value={form.paymentMethod} onChange={(e)=>setForm({...form,paymentMethod:e.target.value as Lead['paymentMethod']})} className={`${inp} bg-white`}>
+                  <option value="Full">Cara Bayar: Full</option>
+                  <option value="Bertahap">Cara Bayar: Bertahap</option>
+                </select>
+              </div>
               <button type="submit" className="w-full py-2.5 rounded-xl text-white font-medium" style={{background:'#4A7C2F'}}>{editing ? 'Save Changes' : 'Add Lead'}</button>
             </form>
           </div>
