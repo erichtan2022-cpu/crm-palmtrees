@@ -23,8 +23,8 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   dashboard: { title: 'Dashboard', subtitle: 'Your overview at a glance' },
   students: { title: 'Students', subtitle: 'Profiles, attendance & milestones' },
   parents: { title: 'Family Directory', subtitle: 'All parent & guardian contacts' },
-  'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads ready for database input' },
   leads: { title: 'Lead Management', subtitle: 'Track prospective families through enrollment' },
+  'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads imported into the database' },
   communications: { title: 'Communication Hub', subtitle: 'Emails, SMS, WhatsApp & newsletters' },
   calendar: { title: 'Calendar & Events', subtitle: 'School-wide events and reminders' },
   progress: { title: 'Montessori Progress', subtitle: 'Developmental milestones & observations' },
@@ -59,9 +59,9 @@ const Shell: React.FC = () => {
     switch (view) {
       case 'dashboard': return <Dashboard onNav={(v) => setView(v as ViewKey)} />;
       case 'students': return <Students />;
-      case 'data-enrolled': return <DataEnrolled />;
       case 'parents': return <Parents />;
       case 'leads': return <Leads />;
+      case 'data-enrolled': return <DataEnrolled />;
       case 'communications': return <Communications />;
       case 'calendar': return <CalendarView />;
       case 'progress': return <Progress />;

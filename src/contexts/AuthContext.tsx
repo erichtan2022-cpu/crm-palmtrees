@@ -54,31 +54,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         setLoading(false);
       })();
-    }).catch(() => {
-      setLoading(false);
     });
 
-    let subscription: { unsubscribe: () => void } | null = null;
-    try {
-      const { data } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
-        (async () => {
-          if (session?.user) {
-            const profile = await loadProfile(session.user.id);
-            if (profile) profile.email = session.user.email ?? '';
-            setCurrentUser(profile);
-            setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
-          } else {
-            setCurrentUser(null);
-            setActivityActor(null);
-          }
-        })();
-      });
-      subscription = data.subscription;
-    } catch {
-      // auth listener failed; loading already cleared above
-    }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
+      (async () => {
+        if (session?.user) {
+          const profile = await loadProfile(session.user.id);
+          if (profile) profile.email = session.user.email ?? '';
+          setCurrentUser(profile);
+          setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
+        } else {
+          setCurrentUser(null);
+          setActivityActor(null);
+        }
+      })();
+    });
 
-    return () => { subscription?.unsubscribe(); };
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -93,16 +85,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const refreshUser = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const profile = await loadProfile(session.user.id);
-        if (profile) profile.email = session.user.email ?? '';
-        setCurrentUser(profile);
-        setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
-      }
-    } catch {
-      // ignore refresh errors
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const profile = await loadProfile(session.user.id);
+      if (profile) profile.email = session.user.email ?? '';
+      setCurrentUser(profile);
+      setActivityActor(profile ? { id: profile.id, name: profile.name, role: profile.role } : null);
     }
   };
 
