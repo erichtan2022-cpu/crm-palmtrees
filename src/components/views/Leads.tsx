@@ -80,7 +80,7 @@ const Leads: React.FC = () => {
   };
 
   const handleImport = async (lead: Lead) => {
-    if (lead.notes.includes('[Imported')) { toast.error('This lead has already been imported.'); return; }
+    if (lead.inDatabase) { toast.error('This lead has already been imported.'); return; }
     if (!confirm(`Input ${lead.childName} & ${lead.parentName} into the Student and Family databases?`)) return;
     setImportingId(lead.id);
     const res = await enrollLead(lead);
@@ -93,8 +93,9 @@ const Leads: React.FC = () => {
     }
   };
 
-  const total = leads.length;
-  const enrolled = leads.filter(l => l.status === 'Enrolled').length;
+  const activeLeads = leads.filter(l => !l.imported);
+  const total = activeLeads.length;
+  const enrolled = activeLeads.filter(l => l.status === 'Enrolled').length;
   const conversion = total > 0 ? Math.round((enrolled / total) * 100) : 0;
   const inp = "w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm outline-none focus:border-green-700";
 
@@ -104,7 +105,7 @@ const Leads: React.FC = () => {
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {STATUSES.map(s => {
-          const count = leads.filter(l => l.status === s).length;
+          const count = activeLeads.filter(l => l.status === s).length;
           return (
             <div key={s} className="bg-white rounded-2xl shadow-sm border border-stone-100 p-4">
               <div className="text-xs text-stone-500 font-medium">{s}</div>
@@ -136,11 +137,11 @@ const Leads: React.FC = () => {
                   <div className="w-2 h-2 rounded-full" style={{background: COLORS[status]}}/>
                   <span className="font-semibold text-sm text-stone-800">{status}</span>
                 </div>
-                <span className="text-xs text-stone-500">{leads.filter(l=>l.status===status).length}</span>
+                <span className="text-xs text-stone-500">{activeLeads.filter(l=>l.status===status).length}</span>
               </div>
               <div className="space-y-2">
-                {leads.filter(l=>l.status===status).map(l => {
-                  const imported = l.notes.includes('[Imported');
+                {leads.filter(l=>l.status===status && !l.imported).map(l => {
+                  const imported = Boolean(l.inDatabase);
                   return (
                     <div key={l.id} className="bg-white rounded-xl p-3 shadow-sm border border-stone-100">
                       <div className="flex items-start justify-between">

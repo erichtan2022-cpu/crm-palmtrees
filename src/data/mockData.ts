@@ -67,6 +67,10 @@ export interface Lead {
   tourDate?: string;
   notes: string;
   followUpDate?: string;
+  tuitionFee?: number;
+  paymentMethod?: 'Full' | 'Bertahap';
+  imported?: boolean;
+  inDatabase?: boolean;
 }
 
 export interface Event {

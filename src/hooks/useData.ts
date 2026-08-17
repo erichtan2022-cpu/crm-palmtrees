@@ -125,6 +125,10 @@ const mapLead = (r: any): Lead => ({
   email: r.email, phone: r.phone, source: r.source, status: r.status,
   inquiryDate: r.inquiry_date, tourDate: r.tour_date, notes: r.notes || '',
   followUpDate: r.follow_up_date,
+  tuitionFee: Number(r.tuition_fee) || 0,
+  paymentMethod: r.payment_method || 'Full',
+  imported: Boolean(r.imported),
+  inDatabase: Boolean(r.in_database),
 });
 
 const mapEvent = (r: any): Event => ({
@@ -225,6 +229,7 @@ export function useLeads() {
       id, parent_name: lead.parentName, child_name: lead.childName, child_age: lead.childAge,
       email: lead.email, phone: lead.phone, source: lead.source, status: lead.status,
       inquiry_date: lead.inquiryDate, tour_date: lead.tourDate, notes: lead.notes,
+      tuition_fee: lead.tuitionFee || 0, payment_method: lead.paymentMethod || 'Full',
     });
     if (error) { console.error(error); return null; }
     await logActivity('create', 'lead', `Added lead: ${lead.parentName} (${lead.childName})`, id);
@@ -244,6 +249,7 @@ export function useLeads() {
       parent_name: lead.parentName, child_name: lead.childName, child_age: lead.childAge,
       email: lead.email, phone: lead.phone, source: lead.source, status: lead.status,
       tour_date: lead.tourDate, notes: lead.notes, follow_up_date: lead.followUpDate,
+      tuition_fee: lead.tuitionFee ?? 0, payment_method: lead.paymentMethod || 'Full',
     }).eq('id', id);
     if (error) { console.error(error); return; }
     await logActivity('update', 'lead', `Updated lead: ${lead.parentName || ''}`, id);
