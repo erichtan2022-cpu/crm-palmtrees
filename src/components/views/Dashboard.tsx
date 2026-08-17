@@ -160,7 +160,7 @@ const Dashboard: React.FC<Props> = ({ onNav }) => {
           </div>
           <div className="mt-4 pt-4 border-t border-stone-100">
             <div className="text-xs text-stone-500 mb-2">Enrollment Revenue</div>
-            <div className="text-xl font-bold text-stone-800">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(leads.filter(l => l.status === 'Enrolled').reduce((sum, l) => sum + (l.revenue || 0), 0))}</div>
+            <div className="text-xl font-bold text-stone-800">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(leads.filter(l => l.status === 'Enrolled').reduce((sum, l) => sum + (l.tuitionFee || 0), 0))}</div>
           </div>
         </div>
 
