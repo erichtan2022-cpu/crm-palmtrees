@@ -8,7 +8,6 @@ import Students from '@/components/views/Students';
 import Parents from '@/components/views/Parents';
 import Leads from '@/components/views/Leads';
 import DataEnrolled from '@/components/views/DataEnrolled';
-import DataEnrolled from '@/components/views/DataEnrolled';
 import Communications from '@/components/views/Communications';
 import CalendarView from '@/components/views/CalendarView';
 import Progress from '@/components/views/Progress';
@@ -26,7 +25,6 @@ const TITLES: Record<ViewKey, { title: string; subtitle: string }> = {
   parents: { title: 'Family Directory', subtitle: 'All parent & guardian contacts' },
   'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads ready for database input' },
   leads: { title: 'Lead Management', subtitle: 'Track prospective families through enrollment' },
-  'data-enrolled': { title: 'Data Enrolled', subtitle: 'Enrolled leads imported into the database' },
   communications: { title: 'Communication Hub', subtitle: 'Emails, SMS, WhatsApp & newsletters' },
   calendar: { title: 'Calendar & Events', subtitle: 'School-wide events and reminders' },
   progress: { title: 'Montessori Progress', subtitle: 'Developmental milestones & observations' },
@@ -64,7 +62,6 @@ const Shell: React.FC = () => {
       case 'data-enrolled': return <DataEnrolled />;
       case 'parents': return <Parents />;
       case 'leads': return <Leads />;
-      case 'data-enrolled': return <DataEnrolled />;
       case 'communications': return <Communications />;
       case 'calendar': return <CalendarView />;
       case 'progress': return <Progress />;
