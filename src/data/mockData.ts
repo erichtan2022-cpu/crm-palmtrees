@@ -71,7 +71,6 @@ export interface Lead {
 
 export interface Event {
   inDatabase: boolean;
-  inDatabase: boolean;
   id: string;
   title: string;
   date: string;
