@@ -7,7 +7,7 @@ import { toast } from '@/components/ui/sonner';
 const SOURCES: Lead['source'][] = ['Website', 'Referral', 'Instagram', 'Google Ads', 'Walk-in'];
 
 const emptyForm = {
-  parentName: '', childName: '', childAge: '', email: '', phone: '',
+  parentName: '', childName: '', childAge: '', childDob: '', email: '', phone: '',
   source: 'Website' as Lead['source'], status: 'Enrolled' as Lead['status'],
   notes: '', tuitionFee: '', paymentMethod: 'Full' as Lead['paymentMethod'],
 };
@@ -24,6 +24,7 @@ const DataEnrolled: React.FC = () => {
     setEditing(l);
     setForm({
       parentName: l.parentName, childName: l.childName, childAge: String(l.childAge),
+      childDob: l.childDob || '',
       email: l.email, phone: l.phone, source: l.source, status: 'Enrolled',
       notes: l.notes, tuitionFee: String(l.tuitionFee || ''), paymentMethod: l.paymentMethod || 'Full',
     });
@@ -36,6 +37,7 @@ const DataEnrolled: React.FC = () => {
     if (!editing) return;
     await updateLead(editing.id, {
       parentName: form.parentName, childName: form.childName, childAge: parseInt(form.childAge) || 3,
+      childDob: form.childDob,
       email: form.email, phone: form.phone, source: form.source, status: 'Enrolled',
       notes: form.notes, tuitionFee: Number(form.tuitionFee) || 0, paymentMethod: form.paymentMethod,
     });
@@ -163,6 +165,10 @@ const DataEnrolled: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <input required value={form.childName} onChange={(e) => setForm({ ...form, childName: e.target.value })} placeholder="Child name" className={inp} />
                 <input required type="number" value={form.childAge} onChange={(e) => setForm({ ...form, childAge: e.target.value })} placeholder="Age" className={inp} />
+              </div>
+              <div>
+                <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
+                <input type="date" value={form.childDob} onChange={(e) => setForm({ ...form, childDob: e.target.value })} className={inp} />
               </div>
               <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className={inp} />
               <input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Phone" className={inp} />

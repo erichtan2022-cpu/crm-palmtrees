@@ -67,6 +67,7 @@ export interface Lead {
   tourDate?: string;
   notes: string;
   followUpDate?: string;
+  childDob?: string;
   tuitionFee?: number;
   paymentMethod?: 'Full' | 'Bertahap';
   imported?: boolean;

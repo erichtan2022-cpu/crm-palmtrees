@@ -13,7 +13,7 @@ const COLORS: Record<Lead['status'], string> = {
   'Enrolled': '#4A7C2F',
 };
 
-const emptyForm = { parentName: '', childName: '', childAge: '', email: '', phone: '', source: 'Website' as Lead['source'], status: 'Inquiry' as Lead['status'], notes: '', tuitionFee: '', paymentMethod: 'Full' as Lead['paymentMethod'] };
+const emptyForm = { parentName: '', childName: '', childAge: '', childDob: '', email: '', phone: '', source: 'Website' as Lead['source'], status: 'Inquiry' as Lead['status'], notes: '', tuitionFee: '', paymentMethod: 'Full' as Lead['paymentMethod'] };
 
 const Leads: React.FC = () => {
   const { data: leads, loading, addLead, updateLeadStatus, updateLead, deleteLead, refresh } = useLeads();
@@ -25,7 +25,7 @@ const Leads: React.FC = () => {
   const openAdd = () => { setEditing(null); setForm(emptyForm); setShowForm(true); };
   const openEdit = (l: Lead) => {
     setEditing(l);
-    setForm({ parentName: l.parentName, childName: l.childName, childAge: String(l.childAge), email: l.email, phone: l.phone, source: l.source, status: l.status, notes: l.notes, tuitionFee: String(l.tuitionFee || ''), paymentMethod: l.paymentMethod || 'Full' });
+    setForm({ parentName: l.parentName, childName: l.childName, childAge: String(l.childAge), childDob: l.childDob || '', email: l.email, phone: l.phone, source: l.source, status: l.status, notes: l.notes, tuitionFee: String(l.tuitionFee || ''), paymentMethod: l.paymentMethod || 'Full' });
     setShowForm(true);
   };
 
@@ -51,6 +51,7 @@ const Leads: React.FC = () => {
       parentName: form.parentName,
       childName: form.childName,
       childAge: parseInt(form.childAge) || 3,
+      childDob: form.childDob,
       email: form.email,
       phone: form.phone,
       source: form.source,
@@ -189,9 +190,16 @@ const Leads: React.FC = () => {
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input required value={form.parentName} onChange={(e)=>setForm({...form,parentName:e.target.value})} placeholder="Parent name" className={inp}/>
+              <input required value={form.childName} onChange={(e)=>setForm({...form,childName:e.target.value})} placeholder="Child name" className={inp}/>
               <div className="grid grid-cols-2 gap-3">
-                <input required value={form.childName} onChange={(e)=>setForm({...form,childName:e.target.value})} placeholder="Child name" className={inp}/>
-                <input required type="number" value={form.childAge} onChange={(e)=>setForm({...form,childAge:e.target.value})} placeholder="Age" className={inp}/>
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
+                  <input type="date" value={form.childDob} onChange={(e)=>setForm({...form,childDob:e.target.value})} className={inp}/>
+                </div>
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Age</label>
+                  <input required type="number" value={form.childAge} onChange={(e)=>setForm({...form,childAge:e.target.value})} placeholder="Age" className={inp}/>
+                </div>
               </div>
               <input required type="email" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} placeholder="Email" className={inp}/>
               <input required value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})} placeholder="Phone" className={inp}/>

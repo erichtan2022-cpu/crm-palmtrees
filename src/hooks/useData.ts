@@ -124,7 +124,7 @@ const mapLead = (r: any): Lead => ({
   id: r.id, parentName: r.parent_name, childName: r.child_name, childAge: r.child_age,
   email: r.email, phone: r.phone, source: r.source, status: r.status,
   inquiryDate: r.inquiry_date, tourDate: r.tour_date, notes: r.notes || '',
-  followUpDate: r.follow_up_date,
+  followUpDate: r.follow_up_date, childDob: r.child_dob || '',
   tuitionFee: Number(r.tuition_fee) || 0,
   paymentMethod: r.payment_method || 'Full',
   imported: Boolean(r.imported),
@@ -229,6 +229,7 @@ export function useLeads() {
       id, parent_name: lead.parentName, child_name: lead.childName, child_age: lead.childAge,
       email: lead.email, phone: lead.phone, source: lead.source, status: lead.status,
       inquiry_date: lead.inquiryDate, tour_date: lead.tourDate, notes: lead.notes,
+      child_dob: lead.childDob || '',
       tuition_fee: lead.tuitionFee || 0, payment_method: lead.paymentMethod || 'Full',
     });
     if (error) { console.error(error); return null; }
@@ -249,6 +250,7 @@ export function useLeads() {
       parent_name: lead.parentName, child_name: lead.childName, child_age: lead.childAge,
       email: lead.email, phone: lead.phone, source: lead.source, status: lead.status,
       tour_date: lead.tourDate, notes: lead.notes, follow_up_date: lead.followUpDate,
+      child_dob: lead.childDob || '',
       tuition_fee: lead.tuitionFee ?? 0, payment_method: lead.paymentMethod || 'Full',
     }).eq('id', id);
     if (error) { console.error(error); return; }
@@ -509,7 +511,7 @@ export async function enrollLead(lead: Lead) {
 
   const { error: sErr } = await supabase.from('students').insert({
     id: studentId, name: lead.childName, photo: `https://i.pravatar.cc/200?u=${encodeURIComponent(lead.childName)}`,
-    age: lead.childAge, dob: '', enrollment_date: new Date().toISOString().split('T')[0],
+    age: lead.childAge, dob: lead.childDob || '', enrollment_date: new Date().toISOString().split('T')[0],
     classroom, medical_info: 'None on file', allergies: [],
     emergency_contact: lead.parentName, emergency_phone: lead.phone,
     parent_ids: [parentId], status: 'active', attendance: [], milestones: [], observations: [],
