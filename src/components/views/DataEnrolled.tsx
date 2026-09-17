@@ -108,7 +108,17 @@ const DataEnrolled: React.FC = () => {
                   <tr key={l.id} className="hover:bg-stone-50/60">
                     <td className="px-4 py-3 font-medium text-stone-800">{l.parentName}</td>
                     <td className="px-4 py-3 text-stone-700">{l.childName}</td>
-                    <td className="px-4 py-3 text-stone-600">{l.childAge}</td>
+                    <td className="px-4 py-3 text-stone-600">
+                      {l.childDob ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          {l.childAge}
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-800 font-medium text-xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-green-600"/>
+                            {calcAge(l.childDob)} thn
+                          </span>
+                        </span>
+                      ) : l.childAge}
+                    </td>
                     <td className="px-4 py-3 text-stone-600">
                       <div className="flex flex-col gap-0.5">
                         <a href={`mailto:${l.email}`} className="hover:text-green-700 truncate max-w-[180px]">{l.email}</a>
@@ -167,6 +177,14 @@ const DataEnrolled: React.FC = () => {
                 <div>
                   <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
                   <input required type="date" value={form.childDob} onChange={(e) => setForm({ ...form, childDob: e.target.value })} className={inp} />
+                  {form.childDob && (
+                    <div className="mt-2 flex items-center gap-2 text-sm">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-800 font-medium text-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"/>
+                        Usia sekarang: {calcAge(form.childDob)} tahun
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className={inp} />

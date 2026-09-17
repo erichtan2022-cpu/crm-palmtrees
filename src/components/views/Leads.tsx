@@ -150,7 +150,9 @@ const Leads: React.FC = () => {
                         <div className="font-semibold text-sm text-stone-800">{l.parentName}</div>
                         <button onClick={()=>openEdit(l)} className="p-1 rounded-lg hover:bg-stone-100" title="Edit"><Pencil className="w-3.5 h-3.5 text-stone-500"/></button>
                       </div>
-                      <div className="text-xs text-stone-500 mt-0.5">{l.childName} · Age {l.childAge}</div>
+                      <div className="text-xs text-stone-500 mt-0.5">
+                        {l.childName} · Age {l.childDob ? calcAge(l.childDob) : l.childAge}
+                      </div>
                       <div className="text-xs text-stone-600 mt-2 line-clamp-2">{l.notes}</div>
                       <div className="flex items-center gap-1 mt-2">
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{background: COLORS[status]+'20', color: COLORS[status]}}>{l.source}</span>
@@ -193,8 +195,16 @@ const Leads: React.FC = () => {
               <input required value={form.parentName} onChange={(e)=>setForm({...form,parentName:e.target.value})} placeholder="Parent name" className={inp}/>
               <input required value={form.childName} onChange={(e)=>setForm({...form,childName:e.target.value})} placeholder="Child name" className={inp}/>
               <div>
-                <label className="block text-xs text-stone-500 mb-1">Date of birth <span className="text-stone-400 normal-case">(age auto-calculated)</span></label>
+                <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
                 <input required type="date" value={form.childDob} onChange={(e)=>setForm({...form,childDob:e.target.value})} className={inp}/>
+                {form.childDob && (
+                  <div className="mt-2 flex items-center gap-2 text-sm">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-800 font-medium text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"/>
+                      Usia sekarang: {calcAge(form.childDob)} tahun
+                    </span>
+                  </div>
+                )}
               </div>
               <input required type="email" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} placeholder="Email" className={inp}/>
               <input required value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})} placeholder="Phone" className={inp}/>
