@@ -3,11 +3,12 @@ import { Lead } from '@/data/mockData';
 import { useLeads, enrollLead } from '@/hooks/useData';
 import { Pencil, X, Trash2, CircleCheck as CheckCircle2, Database } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { calcAge } from '@/lib/utils';
 
 const SOURCES: Lead['source'][] = ['Website', 'Referral', 'Instagram', 'Google Ads', 'Walk-in'];
 
 const emptyForm = {
-  parentName: '', childName: '', childAge: '', childDob: '', email: '', phone: '',
+  parentName: '', childName: '', childDob: '', email: '', phone: '',
   source: 'Website' as Lead['source'], status: 'Enrolled' as Lead['status'],
   notes: '', tuitionFee: '', paymentMethod: 'Full' as Lead['paymentMethod'],
 };
@@ -23,8 +24,7 @@ const DataEnrolled: React.FC = () => {
   const openEdit = (l: Lead) => {
     setEditing(l);
     setForm({
-      parentName: l.parentName, childName: l.childName, childAge: String(l.childAge),
-      childDob: l.childDob || '',
+      parentName: l.parentName, childName: l.childName, childDob: l.childDob || '',
       email: l.email, phone: l.phone, source: l.source, status: 'Enrolled',
       notes: l.notes, tuitionFee: String(l.tuitionFee || ''), paymentMethod: l.paymentMethod || 'Full',
     });
@@ -36,7 +36,7 @@ const DataEnrolled: React.FC = () => {
     e.preventDefault();
     if (!editing) return;
     await updateLead(editing.id, {
-      parentName: form.parentName, childName: form.childName, childAge: parseInt(form.childAge) || 3,
+      parentName: form.parentName, childName: form.childName, childAge: calcAge(form.childDob),
       childDob: form.childDob,
       email: form.email, phone: form.phone, source: form.source, status: 'Enrolled',
       notes: form.notes, tuitionFee: Number(form.tuitionFee) || 0, paymentMethod: form.paymentMethod,
@@ -164,11 +164,10 @@ const DataEnrolled: React.FC = () => {
               <input required value={form.parentName} onChange={(e) => setForm({ ...form, parentName: e.target.value })} placeholder="Parent name" className={inp} />
               <div className="grid grid-cols-2 gap-3">
                 <input required value={form.childName} onChange={(e) => setForm({ ...form, childName: e.target.value })} placeholder="Child name" className={inp} />
-                <input required type="number" value={form.childAge} onChange={(e) => setForm({ ...form, childAge: e.target.value })} placeholder="Age" className={inp} />
-              </div>
-              <div>
-                <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
-                <input type="date" value={form.childDob} onChange={(e) => setForm({ ...form, childDob: e.target.value })} className={inp} />
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
+                  <input required type="date" value={form.childDob} onChange={(e) => setForm({ ...form, childDob: e.target.value })} className={inp} />
+                </div>
               </div>
               <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email" className={inp} />
               <input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="Phone" className={inp} />
