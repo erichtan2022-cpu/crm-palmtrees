@@ -3,13 +3,15 @@
 
 export const LOGO_URL = 'https://i.imgur.com/0XvBpZ6.png';
 
-const classrooms = ['Toddler', 'Primary', 'Lower Elementary', 'Upper Elementary'] as const;
+import { programFromAge } from '@/lib/utils';
+
+const classrooms = ['Preschool', 'Kindergarten A', 'Kindergarten B', 'Lower Elementary', 'Upper Elementary'] as const;
 const firstNames = ['Aisha','Rafi','Nadia','Bima','Citra','Dimas','Elena','Farid','Gita','Hadi','Indah','Joko','Kirana','Luna','Maya','Nico','Olivia','Putri','Reza','Sari','Tomi','Umi','Vino','Wina','Xavi','Yana','Zara','Andi','Bella','Caca'];
 const lastNames = ['Patra','Wijaya','Santoso','Pratama','Kusuma','Lestari','Hartono','Saputra','Cahyani','Nugroho'];
 
 export const seedStudents = Array.from({ length: 28 }, (_, i) => {
   const age = 2 + (i % 10);
-  const cr = age < 3 ? 'Toddler' : age < 6 ? 'Primary' : age < 9 ? 'Lower Elementary' : 'Upper Elementary';
+  const cr = programFromAge(age);
   const name = i === 0 ? 'Aria Patra' : i === 1 ? 'Kenzo Patra' : `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`;
   return {
     id: `s${i + 1}`,
@@ -62,7 +64,7 @@ export const seedParents = [
 ];
 
 export const seedLeads = [
-  { id: 'l1', parent_name: 'Devi Anggraini', child_name: 'Arya', child_age: 3, email: 'devi@example.com', phone: '+62812345601', source: 'Website', status: 'Inquiry', inquiry_date: '2026-05-22', notes: 'Interested in Primary class' },
+  { id: 'l1', parent_name: 'Devi Anggraini', child_name: 'Arya', child_age: 3, email: 'devi@example.com', phone: '+62812345601', source: 'Website', status: 'Inquiry', inquiry_date: '2026-05-22', notes: 'Interested in Preschool class' },
   { id: 'l2', parent_name: 'Rudi Hartono', child_name: 'Mila', child_age: 4, email: 'rudi@example.com', phone: '+62812345602', source: 'Instagram', status: 'Tour Scheduled', inquiry_date: '2026-05-20', tour_date: '2026-05-28', notes: 'Tour booked for Saturday' },
   { id: 'l3', parent_name: 'Lisa Permata', child_name: 'Kai', child_age: 2, email: 'lisa@example.com', phone: '+62812345603', source: 'Referral', status: 'Tour Completed', inquiry_date: '2026-05-15', tour_date: '2026-05-21', notes: 'Loved the environment, considering' },
   { id: 'l4', parent_name: 'Bagus Setiawan', child_name: 'Naya', child_age: 5, email: 'bagus@example.com', phone: '+62812345604', source: 'Google Ads', status: 'Applied', inquiry_date: '2026-05-10', notes: 'Application submitted, awaiting docs' },
@@ -78,10 +80,10 @@ export const seedLeads = [
 
 export const seedEvents = [
   { id: 'e1', title: 'Parent-Teacher Conference', date: '2026-05-27', time: '14:00', type: 'conference', description: 'Spring progress meetings' },
-  { id: 'e2', title: 'Spring Nature Walk', date: '2026-05-28', time: '09:00', type: 'class', classroom: 'Primary', description: 'Outdoor exploration with the Primary class' },
+  { id: 'e2', title: 'Spring Nature Walk', date: '2026-05-28', time: '09:00', type: 'class', classroom: 'Kindergarten B', description: 'Outdoor exploration with the Kindergarten class' },
   { id: 'e3', title: 'School Open House', date: '2026-05-30', time: '10:00', type: 'school', description: 'Tours for prospective families' },
   { id: 'e4', title: 'Cultural Celebration Day', date: '2026-06-05', time: '09:00', type: 'school', description: 'Celebrating cultures from around the world' },
-  { id: 'e5', title: 'Toddler Music & Movement', date: '2026-06-02', time: '10:30', type: 'class', classroom: 'Toddler', description: 'Weekly music session' },
+  { id: 'e5', title: 'Preschool Music & Movement', date: '2026-06-02', time: '10:30', type: 'class', classroom: 'Preschool', description: 'Weekly music session' },
   { id: 'e6', title: 'School Holiday - Idul Adha', date: '2026-06-17', time: 'All day', type: 'holiday', description: 'School closed' },
   { id: 'e7', title: 'Elementary Field Trip - Botanical Garden', date: '2026-06-10', time: '08:00', type: 'class', classroom: 'Lower Elementary', description: 'Bring water bottle and hat' },
   { id: 'e8', title: 'Parent Workshop: Montessori at Home', date: '2026-06-08', time: '18:00', type: 'school', description: 'Practical tips for home environment' },
@@ -91,17 +93,17 @@ export const seedEvents = [
 
 export const seedMessages = [
   { id: 'm1', to_recipient: 'All Parents', subject: 'Weekly Newsletter - May Week 4', channel: 'email', date: '2026-05-23', status: 'delivered', preview: 'This week our children explored...' },
-  { id: 'm2', to_recipient: 'Primary Class Parents', subject: 'Nature Walk Reminder', channel: 'whatsapp', date: '2026-05-22', status: 'read', preview: 'Don\'t forget tomorrow\'s nature walk!' },
+  { id: 'm2', to_recipient: 'Kindergarten B Parents', subject: 'Nature Walk Reminder', channel: 'whatsapp', date: '2026-05-22', status: 'read', preview: 'Don\'t forget tomorrow\'s nature walk!' },
   { id: 'm3', to_recipient: 'Johny Patra', subject: 'Aria\'s Progress Update', channel: 'email', date: '2026-05-20', status: 'read', preview: 'Aria has mastered the pink tower...' },
   { id: 'm4', to_recipient: 'All Parents', subject: 'School Open House Invitation', channel: 'email', date: '2026-05-18', status: 'delivered', preview: 'Invite friends to our Open House' },
-  { id: 'm5', to_recipient: 'Toddler Parents', subject: 'Music Class Tomorrow', channel: 'sms', date: '2026-05-17', status: 'delivered', preview: 'Reminder: Music & Movement at 10:30' },
+  { id: 'm5', to_recipient: 'Preschool Parents', subject: 'Music Class Tomorrow', channel: 'sms', date: '2026-05-17', status: 'delivered', preview: 'Reminder: Music & Movement at 10:30' },
 ];
 
 export const seedWaitlist = [
-  { id: 'w1', child_name: 'Aldo Susanto', parent_name: 'Pak Susanto', age: 2, desired_class: 'Toddler', join_date: '2026-03-15', priority: 'high', notes: 'Sibling of current student', position: 1 },
-  { id: 'w2', child_name: 'Mira Halim', parent_name: 'Bu Halim', age: 3, desired_class: 'Primary', join_date: '2026-04-02', priority: 'medium', notes: 'Referred by Patra family', position: 2 },
-  { id: 'w3', child_name: 'Reno Sutrisno', parent_name: 'Pak Sutrisno', age: 4, desired_class: 'Primary', join_date: '2026-04-20', priority: 'medium', notes: 'Tour completed, applied', position: 3 },
-  { id: 'w4', child_name: 'Tania Halilintar', parent_name: 'Bu Halilintar', age: 2, desired_class: 'Toddler', join_date: '2026-05-01', priority: 'low', notes: 'Just inquired', position: 4 },
+  { id: 'w1', child_name: 'Aldo Susanto', parent_name: 'Pak Susanto', age: 2, desired_class: 'Preschool', join_date: '2026-03-15', priority: 'high', notes: 'Sibling of current student', position: 1 },
+  { id: 'w2', child_name: 'Mira Halim', parent_name: 'Bu Halim', age: 3, desired_class: 'Preschool', join_date: '2026-04-02', priority: 'medium', notes: 'Referred by Patra family', position: 2 },
+  { id: 'w3', child_name: 'Reno Sutrisno', parent_name: 'Pak Sutrisno', age: 4, desired_class: 'Preschool', join_date: '2026-04-20', priority: 'medium', notes: 'Tour completed, applied', position: 3 },
+  { id: 'w4', child_name: 'Tania Halilintar', parent_name: 'Bu Halilintar', age: 2, desired_class: 'Preschool', join_date: '2026-05-01', priority: 'low', notes: 'Just inquired', position: 4 },
   { id: 'w5', child_name: 'Bayu Wirawan', parent_name: 'Pak Wirawan', age: 5, desired_class: 'Lower Elementary', join_date: '2026-05-10', priority: 'high', notes: 'Sibling discount applies', position: 5 },
 ];
 

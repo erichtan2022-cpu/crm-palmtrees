@@ -4,6 +4,7 @@ import { useStudents, addStudentObservation, recordAttendance, deleteStudent, ad
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, Download, Plus, X, CircleAlert as AlertCircle, Phone, Calendar, CircleCheck as CheckCircle2, Clock, Circle as XCircle, Trash2, Pencil, Camera } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { calcAge, programFromDob, PROGRAMS } from '@/lib/utils';
 
 const Students: React.FC = () => {
   const { currentUser } = useAuth();
@@ -42,11 +43,8 @@ const Students: React.FC = () => {
           <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search students..." className="bg-transparent outline-none text-sm flex-1" />
         </div>
         <select value={classFilter} onChange={(e)=>setClassFilter(e.target.value)} className="px-3 py-2 rounded-xl border border-stone-200 text-sm bg-white">
-          <option value="all">All Classes</option>
-          <option value="Toddler">Toddler</option>
-          <option value="Primary">Primary</option>
-          <option value="Lower Elementary">Lower Elementary</option>
-          <option value="Upper Elementary">Upper Elementary</option>
+          <option value="all">All Programs</option>
+          {PROGRAMS.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
         <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-sm font-medium text-stone-700"><Download className="w-4 h-4"/>Export</button>
         {currentUser?.role !== 'parent' && (
@@ -78,7 +76,7 @@ const Students: React.FC = () => {
               </div>
               <div className="p-4 pt-8 cursor-pointer" onClick={()=>setSelected(s)}>
                 <div className="font-bold text-stone-800">{s.name}</div>
-                <div className="text-xs text-stone-500 mt-0.5">{s.classroom} · Age {s.age}</div>
+                <div className="text-xs text-stone-500 mt-0.5">{s.classroom} · Age {s.dob ? calcAge(s.dob) : s.age}</div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-stone-100">
                   <span className="text-xs text-stone-600">Today</span>
                   <span className={`text-xs font-medium flex items-center gap-1 ${today?.status==='present'?'text-green-700':today?.status==='late'?'text-amber-700':'text-red-700'}`}>
@@ -106,8 +104,8 @@ const StudentFormModal: React.FC<{ student?: Student; onClose: () => void; onSav
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
-    name: student?.name || '', age: student ? String(student.age) : '', dob: student?.dob || '',
-    classroom: student?.classroom || 'Toddler' as Student['classroom'],
+    name: student?.name || '', dob: student?.dob || '',
+    classroom: student?.classroom || 'Preschool' as Student['classroom'],
     enrollmentDate: student?.enrollmentDate || new Date().toISOString().split('T')[0],
     medicalInfo: student?.medicalInfo || 'None on file',
     allergies: student?.allergies.join(', ') || '',
@@ -133,8 +131,8 @@ const StudentFormModal: React.FC<{ student?: Student; onClose: () => void; onSav
 
     if (editing && student) {
       const ok = await updateStudent(student.id, {
-        name: form.name, photo: finalPhoto, age: parseInt(form.age) || 3,
-        dob: form.dob, classroom: form.classroom, medicalInfo: form.medicalInfo,
+        name: form.name, photo: finalPhoto, age: calcAge(form.dob),
+        dob: form.dob, classroom: form.dob ? programFromDob(form.dob) : form.classroom, medicalInfo: form.medicalInfo,
         allergies: form.allergies.split(',').map(a=>a.trim()).filter(Boolean),
         emergencyContact: form.emergencyContact, emergencyPhone: form.emergencyPhone,
       });
@@ -143,8 +141,8 @@ const StudentFormModal: React.FC<{ student?: Student; onClose: () => void; onSav
       else toast.error('Could not update student.');
     } else {
       const id = await addStudent({
-        name: form.name, photo: finalPhoto, age: parseInt(form.age) || 3,
-        dob: form.dob, enrollmentDate: form.enrollmentDate, classroom: form.classroom,
+        name: form.name, photo: finalPhoto, age: calcAge(form.dob),
+        dob: form.dob, enrollmentDate: form.enrollmentDate, classroom: form.dob ? programFromDob(form.dob) : form.classroom,
         medicalInfo: form.medicalInfo,
         allergies: form.allergies.split(',').map(a=>a.trim()).filter(Boolean),
         emergencyContact: form.emergencyContact, emergencyPhone: form.emergencyPhone,
@@ -177,21 +175,24 @@ const StudentFormModal: React.FC<{ student?: Student; onClose: () => void; onSav
             <div className="text-xs text-stone-500">Click the camera icon to upload a photo from your device.</div>
           </div>
           <input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} placeholder="Child full name" className={inp}/>
-          <div className="grid grid-cols-2 gap-3">
-            <input required type="number" value={form.age} onChange={(e)=>setForm({...form,age:e.target.value})} placeholder="Age" className={inp}/>
-            <select value={form.classroom} onChange={(e)=>setForm({...form,classroom:e.target.value as Student['classroom']})} className={inp}>
-              <option>Toddler</option><option>Primary</option><option>Lower Elementary</option><option>Upper Elementary</option>
-            </select>
+          <div>
+            <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
+            <input required type="date" value={form.dob} onChange={(e)=>setForm({...form,dob:e.target.value})} className={inp}/>
+            {form.dob && (
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-800 font-medium text-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"/>
+                  Usia: {calcAge(form.dob)} tahun
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 font-medium text-xs">
+                  Program: {programFromDob(form.dob)}
+                </span>
+              </div>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-stone-500 mb-1">Date of birth</label>
-              <input type="date" value={form.dob} onChange={(e)=>setForm({...form,dob:e.target.value})} className={inp}/>
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500 mb-1">Enrollment date</label>
-              <input type="date" value={form.enrollmentDate} onChange={(e)=>setForm({...form,enrollmentDate:e.target.value})} className={inp}/>
-            </div>
+          <div>
+            <label className="block text-xs text-stone-500 mb-1">Enrollment date</label>
+            <input type="date" value={form.enrollmentDate} onChange={(e)=>setForm({...form,enrollmentDate:e.target.value})} className={inp}/>
           </div>
           <input value={form.medicalInfo} onChange={(e)=>setForm({...form,medicalInfo:e.target.value})} placeholder="Medical info" className={inp}/>
           <input value={form.allergies} onChange={(e)=>setForm({...form,allergies:e.target.value})} placeholder="Allergies (comma separated)" className={inp}/>
@@ -267,7 +268,7 @@ const StudentDetail: React.FC<{ student: Student; onClose: () => void; onChanged
           <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
             <div>
               <h2 className="text-2xl font-bold" style={{color:'#2D5016'}}>{student.name}</h2>
-              <div className="text-stone-600 text-sm">{student.classroom} Class · Age {student.age} · Enrolled {student.enrollmentDate}</div>
+              <div className="text-stone-600 text-sm">{student.classroom} · Age {student.dob ? calcAge(student.dob) : student.age} · Enrolled {student.enrollmentDate}</div>
             </div>
             {canEdit && (
               <div className="flex gap-2 flex-wrap">

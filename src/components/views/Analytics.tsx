@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLeads, useStudents, useParents, useWaitlist } from '@/hooks/useData';
 import { TrendingUp, FolderInput as FormInput, Target, Users, Heart, UserPlus, Clock, Wallet } from 'lucide-react';
+import { PROGRAMS } from '@/lib/utils';
 
 const Analytics: React.FC = () => {
   const { data: leads } = useLeads();
@@ -16,7 +17,7 @@ const Analytics: React.FC = () => {
   const enrolledLeads = leads.filter(l => l.status === 'Enrolled').length;
   const conversionRate = leads.length > 0 ? ((enrolledLeads / leads.length) * 100).toFixed(1) : '0.0';
 
-  const classroomBreakdown = ['Toddler', 'Primary', 'Lower Elementary', 'Upper Elementary'].map(c => ({
+  const classroomBreakdown = PROGRAMS.map(c => ({
     name: c,
     count: students.filter(s => s.classroom === c).length,
   }));
@@ -124,11 +125,11 @@ const Analytics: React.FC = () => {
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Classroom breakdown — live */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5">
-          <h3 className="font-bold text-stone-800 mb-4">Students by Classroom <span className="text-xs font-normal text-green-700 bg-green-50 px-2 py-0.5 rounded-full ml-1">Live</span></h3>
+          <h3 className="font-bold text-stone-800 mb-4">Students by Program <span className="text-xs font-normal text-green-700 bg-green-50 px-2 py-0.5 rounded-full ml-1">Live</span></h3>
           <div className="space-y-3">
             {classroomBreakdown.map(c => {
               const max = Math.max(...classroomBreakdown.map(x => x.count), 1);
-              const colors: Record<string, string> = { Toddler: '#D2A679', Primary: '#4A7C2F', 'Lower Elementary': '#8B4513', 'Upper Elementary': '#2D5016' };
+              const colors: Record<string, string> = { Preschool: '#D2A679', 'Kindergarten A': '#4A7C2F', 'Kindergarten B': '#8B4513', 'Lower Elementary': '#6B8E23', 'Upper Elementary': '#2D5016' };
               return (
                 <div key={c.name}>
                   <div className="flex justify-between text-sm mb-1">
@@ -181,7 +182,7 @@ const Analytics: React.FC = () => {
             <tbody className="divide-y divide-stone-100">
               {[
                 { c: 'Open House May', ch: 'Instagram', i: 4200, cl: 312, l: 18, roi: '4.2x' },
-                { c: 'Toddler Program', ch: 'Google Ads', i: 6800, cl: 245, l: 12, roi: '2.8x' },
+                { c: 'Preschool Program', ch: 'Google Ads', i: 6800, cl: 245, l: 12, roi: '2.8x' },
                 { c: 'Referral Bonus', ch: 'Email', i: 186, cl: 92, l: 8, roi: '6.1x' },
                 { c: 'Spring Tours', ch: 'Website', i: 1520, cl: 478, l: 24, roi: '5.4x' },
               ].map((r, i) => (

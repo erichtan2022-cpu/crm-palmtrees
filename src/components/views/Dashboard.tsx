@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudents, useParents, useLeads, useEvents, useMessages, useWaitlist } from '@/hooks/useData';
 import { Users, UserPlus, Calendar, MessageSquare, TrendingUp, Heart, Clock, ArrowUpRight, CircleCheck as CheckCircle2 } from 'lucide-react';
+import { calcAge } from '@/lib/utils';
 
 interface Props { onNav: (v: string) => void }
 
@@ -50,9 +51,9 @@ const Dashboard: React.FC<Props> = ({ onNav }) => {
               <div className="p-5 flex items-center gap-4">
                 <img src={child.photo} alt={child.name} className="w-20 h-20 rounded-2xl object-cover ring-4 ring-green-50" />
                 <div className="flex-1">
-                  <div className="text-xs text-stone-500 mb-0.5">{child.classroom} Class</div>
+                  <div className="text-xs text-stone-500 mb-0.5">{child.classroom} Program</div>
                   <h3 className="font-bold text-lg" style={{color:'#2D5016'}}>{child.name}</h3>
-                  <div className="text-sm text-stone-600">Age {child.age} · Enrolled {child.enrollmentDate}</div>
+                  <div className="text-sm text-stone-600">Age {child.dob ? calcAge(child.dob) : child.age} · Enrolled {child.enrollmentDate}</div>
                 </div>
               </div>
               <div className="px-5 pb-5 grid grid-cols-3 gap-2">
@@ -197,7 +198,7 @@ const Dashboard: React.FC<Props> = ({ onNav }) => {
               <div key={l.id} className="flex items-center justify-between p-3 rounded-xl bg-stone-50 hover:bg-stone-100 transition">
                 <div>
                   <div className="font-medium text-stone-800 text-sm">{l.parentName}</div>
-                  <div className="text-xs text-stone-500">{l.childName} · Age {l.childAge} · {l.source}</div>
+                  <div className="text-xs text-stone-500">{l.childName} · Age {l.childDob ? calcAge(l.childDob) : l.childAge} · {l.source}</div>
                 </div>
                 <span className="text-xs px-2 py-1 rounded-full font-medium" style={{
                   background: l.status==='Enrolled'?'#dcfce7':l.status==='Applied'?'#dbeafe':l.status==='Tour Completed'?'#fef3c7':'#f5f5f4',

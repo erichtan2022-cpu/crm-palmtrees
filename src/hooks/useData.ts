@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Student, Parent, Lead, Event, Message, Volunteer, Waitlist } from '@/data/mockData';
+import { programFromAge } from '@/lib/utils';
 import {
   seedStudents, seedParents, seedLeads, seedEvents, seedMessages, seedWaitlist, seedVolunteers
 } from '@/data/seedData';
@@ -500,7 +501,7 @@ export async function moveToDataEnrolled(leadId: string) {
 export async function enrollLead(lead: Lead) {
   const parentId = crypto.randomUUID();
   const studentId = crypto.randomUUID();
-  const classroom = lead.childAge <= 3 ? 'Toddler' : lead.childAge <= 6 ? 'Primary' : lead.childAge <= 9 ? 'Lower Elementary' : 'Upper Elementary';
+  const classroom = programFromAge(lead.childAge);
 
   const { error: pErr } = await supabase.from('parents').insert({
     id: parentId, name: lead.parentName, email: lead.email, phone: lead.phone,

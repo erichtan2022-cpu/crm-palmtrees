@@ -30,7 +30,7 @@ export interface Student {
   age: number;
   dob: string;
   enrollmentDate: string;
-  classroom: 'Toddler' | 'Primary' | 'Lower Elementary' | 'Upper Elementary';
+  classroom: 'Preschool' | 'Kindergarten A' | 'Kindergarten B' | 'Lower Elementary' | 'Upper Elementary';
   medicalInfo: string;
   allergies: string[];
   emergencyContact: string;

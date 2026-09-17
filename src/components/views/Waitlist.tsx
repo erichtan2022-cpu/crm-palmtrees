@@ -3,8 +3,9 @@ import { useWaitlist, updateWaitlist } from '@/hooks/useData';
 import { Waitlist as WaitlistType } from '@/data/mockData';
 import { ArrowUp, Mail, Check, Plus, X, Pencil, Info } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { PROGRAMS } from '@/lib/utils';
 
-const emptyForm = { childName: '', parentName: '', age: '', desiredClass: 'Toddler', priority: 'medium' as 'high'|'medium'|'low', notes: '' };
+const emptyForm = { childName: '', parentName: '', age: '', desiredClass: 'Preschool' as string, priority: 'medium' as 'high'|'medium'|'low', notes: '' };
 
 const Waitlist: React.FC = () => {
   const { data, loading, reorder, removeFromWaitlist, addToWaitlist, refresh } = useWaitlist();
@@ -119,7 +120,7 @@ const Waitlist: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <input required type="number" value={form.age} onChange={(e)=>setForm({...form,age:e.target.value})} placeholder="Age" className={inp}/>
                 <select value={form.desiredClass} onChange={(e)=>setForm({...form,desiredClass:e.target.value})} className={inp}>
-                  <option>Toddler</option><option>Primary</option><option>Lower Elementary</option><option>Upper Elementary</option>
+                  {PROGRAMS.map(p => <option key={p}>{p}</option>)}
                 </select>
               </div>
               <select value={form.priority} onChange={(e)=>setForm({...form,priority:e.target.value as any})} className={inp}>

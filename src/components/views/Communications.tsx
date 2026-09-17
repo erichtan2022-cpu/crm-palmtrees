@@ -72,8 +72,9 @@ const Communications: React.FC = () => {
               <label className="text-xs font-medium text-stone-600 block mb-1">Recipients</label>
               <select value={recipient} onChange={(e)=>setRecipient(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-stone-200 text-sm">
                 <option>All Parents</option>
-                <option>Toddler Class Parents</option>
-                <option>Primary Class Parents</option>
+                <option>Preschool Parents</option>
+                <option>Kindergarten A Parents</option>
+                <option>Kindergarten B Parents</option>
                 <option>Lower Elementary Parents</option>
                 <option>Upper Elementary Parents</option>
                 <option>Active Leads</option>
